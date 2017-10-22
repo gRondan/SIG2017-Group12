@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="">
+<meta name="author" content="">
+
+<title>SIG 2016</title>
+
+<!-- Bootstrap Core CSS -->
+<link href="css/bootstrap.min.css" rel="stylesheet" type="text/css">
+<link href="css/lab.css" rel="stylesheet">
+<link href="font-awesome/css/font-awesome.min.css" rel="stylesheet"	type="text/css">
+<link href="css/animate.css" rel="stylesheet" />
+<link href="css/style.css" rel="stylesheet">
+<link href="color/default.css" rel="stylesheet">
+
+<link rel="stylesheet"	href="http://js.arcgis.com/3.18/dijit/themes/claro/claro.css">
+<link rel="stylesheet"	href="http://js.arcgis.com/3.18/esri/css/esri.css">
+<link rel='stylesheet'	href='https://fonts.googleapis.com/css?family=Special+Elite' type='text/css'>
+<link rel="stylesheet"	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+
+
+<script src=" http://code.jquery.com/jquery-latest.min.js"></script>
+<script	src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+<script src="http://js.arcgis.com/3.18/"></script>
+<script src="js/aplicacion_aux.js"></script>
+<script src="js/aplicacion.js"></script>
+
+</head>
+
+<body id="page-top" data-spy="scroll" data-target=".navbar-custom">
+	<div id="preloader">
+		<div id="load"></div>
+	</div>
+	<audio src="audios/beep-06.wav" id="beep-6" autostart="true" width="0" height="0" enablejavascript="true"></audio>
+	<audio src="audios/beep-07.wav" id="beep-7" autostart="true" width="0" height="0" enablejavascript="true"></audio>
+	<audio src="audios/beep-08.wav" id="beep-8" autostart="true" width="0" height="0" enablejavascript="true"></audio>
+	<audio src="audios/beep-14.wav" id="beep-14" autostart="true" width="0" height="0" enablejavascript="true"></audio>
+	<audio src="audios/beep-41.wav" id="beep-41" autostart="true" width="0" height="0" enablejavascript="true"></audio>
+	<audio src="audios/beep-42.wav" id="beep-42" autostart="true" width="0" height="0" enablejavascript="true"></audio>
+	<audio src="audios/beep-43.wav" id="beep-43" autostart="true" width="0" height="0" enablejavascript="true"></audio>
+	<audio src="audios/beep-44.wav" id="beep-44" autostart="true" width="0" height="0" enablejavascript="true"></audio>
+
+	<nav class="navbar navbar-custom navbar-fixed-top" role="navigation">
+		<div class="container">
+			<div class="navbar-header page-scroll">
+				<button type="button" class="navbar-toggle" data-toggle="collapse"
+					data-target=".navbar-main-collapse">
+					<i class="fa fa-bars"></i>
+				</button>
+				<a class="navbar-brand" href="index.html">
+					<h1>SIG 2016</h1>
+				</a>
+			</div>
+		</div>
+		<!-- /.container -->
+	</nav>
+
+	<!-- Section: intro -->
+	<section id="intro" class="intro">
+		<div class="slogan">
+			<h2> LABORATORIO 2 </h2>
+			<h3> GRUPO 4 </h3>
+			<h4> Carina Soca - Rodrigo Eizmendi </h4>
+		</div>
+		<div class="page-scroll">
+	</section>
+	<!-- /Section: intro -->
+
+	<section id="about" class="home-section text-center">
+		<div class="heading-about">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-8 col-lg-offset-2">
+						<div class="wow bounceInDown" data-wow-delay="0.4s">
+							<div class="section-heading">
+								<h2 style="color:#fff;">GUÍA RÁPIDA</h2>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="container">
+			<div class="row">
+				<div class="col-lg-2 col-lg-offset-5">
+					<hr class="marginbot-50">
+				</div>
+			</div>
+			<div class="row instruc">
+					<div class="col-md-2">1. Agregue algunos puntos.</div>
+					<div class="col-md-2">2. Revise el orden.</div>
+					<div class="col-md-2">3. Calcule la ruta.</div>
+					<div class="col-md-2">4. Comience la simulación.</div>
+					<div class="col-md-2">5. Si lo desea modifique los parámetros.</div>
+					<div class="col-md-2">6. Detenga la simulación</div>
+			</div>
+		</div>
+	</section>
+	<!-- /Section: about -->
+	<!-- Section: demo -->
+	<section id="contact" class="home-section">
+		<div class="row">
+
+			<div style="margin-left: 2%;">
+				<div class="row">
+					<div class="col-md-12 col-map">
+						<!-- Lista de Puntos -->
+						<div id="ptosList" class="col-md-4">
+							<div class="panel panel-success listaPuntos">
+
+								<div class="panel-heading">
+									<h3 class="panel-title" style="font-size: 100%;">Lista de puntos</h3>
+									<span class="pull-right clickable">
+										<i class="glyphicon glyphicon-minus"></i>
+									</span>
+								</div>
+
+								<div class="panel-body">
+									<label id="listMsj">No hay puntos.</label>
+									<div class="row" id="listaPtos">
+										<div id="list-items"></div>
+									</div>
+									<div class="row" style = "margin:2%; text-align:center">
+										<button id="guardarPtosBtn" class="btn btn-success" data-toggle="tooltip" title="Guardar puntos">
+											<!-- Guardar -->
+											<i class="glyphicon glyphicon-upload"></i>
+										</button>
+										<button id="borrarPtosBtn" class="btn btn-success" data-toggle="tooltip" title="Borrar puntos">
+											<!-- Borrar -->
+											<i class="glyphicon glyphicon-trash"></i>
+										</button>
+										<button id="cargarPtosBtn" class="btn btn-success" data-toggle="tooltip" title="Cargar puntos">
+											<!-- Cargar -->
+											<i class="glyphicon glyphicon-download"></i>
+										</button>
+									</div>
+									<div class="row" style = "margin:2%; text-align:center" >
+										<button id="rutaBtn" class="btn btn-primary">
+											Calcular Ruta
+										</button>
+										<button id="borrarRutaBtn" class="btn btn-primary" >
+											Borrar Ruta
+										</button>
+									</div>
+								</div>
+
+							</div>
+						</div>
+
+						<div id="infoList" class="col-md-4">
+							<div class="panel panel-success listaPuntos" style="background-color: rgba(82,84,82,0.75); color: #d0e9c6;font-weight: 300;">
+
+								<div class="panel-heading">
+									<h3 class="panel-title" style="font-size: 100%;">Info de puntos</h3>
+									<span class="pull-right clickable">
+										<i class="glyphicon glyphicon-minus"></i>
+									</span>
+								</div>
+
+								<div class="panel-body" style="margin:2%">
+									<div class="row" id="infoSimu">
+										<div id="list-items"></div>
+									</div>
+								</div>
+
+							</div>
+						</div>
+
+						<div id="search"></div>
+						<div id="map"></div>
+						<div class="row" style="margin-bottom:1%; margin-top: 1%;display: flex;">
+							<div class="col-md-1" style="margin-left: 1%; padding-right:1px; width:120px; text-align:center">
+								<button id="soundOn" class="btn btn-primary" onclick="habilitarSonido">
+									<i class="glyphicon glyphicon-volume-off" style="color:#fff"></i>
+								</button>
+								<button id="soundOff" class="btn btn-primary" onclick="deshabilitarSonido">
+									<i class="glyphicon glyphicon-volume-up" style="color:#fff"></i>
+								</button>
+							</div>
+							<div class="col-md-3" style="padding:2px; text-align:center; width:290px">
+								<!-- Seleccionar radio para el buffer -->
+								<div style="color: white; margin-left: 3%;">
+									<span> Radio para el buffer: </span>
+									<form style="color: white; margin-left: 2%;" id="radioSelect">
+									  <input type="radio" name="rd-buffer" id="p" value:"p" checked> Pequeño
+									  <input type="radio" name="rd-buffer" id="m" value:"m"> Mediano
+									  <input type="radio" name="rd-buffer" id="g" value:"g"> Grande
+									</form>
+								</div>
+							</div>
+							<div class="col-md-2" style="padding:2px; text-align:center">
+								<!-- Seleccionar velocidad del movil -->
+								<div style="color: white; margin-left: 3%;">
+									<span> Velocidad para el móvil: </span>
+									<form style="color: white; margin-left: 2%;">
+										<input type="radio" name="rd-velocidad" id="vbaja" value="vbaja" checked> Baja
+										<input type="radio" name="rd-velocidad" id="vmedia" value="vmedia"> Media
+										<input type="radio" name="rd-velocidad" id="valta" value="valta"> Alta
+									</form>
+								</div>
+							</div>
+
+							<!-- Controles -->
+							<div class="col-md-2" style="text-align:center;padding:2px;width: 150px;">
+								<button id="startBtn" class="btn btn-success">
+									<i class="glyphicon glyphicon-play" style="color:#fff"></i>
+								</button>
+								<button id="stopBtn" class="btn btn-primary">
+									<i class="glyphicon glyphicon-stop"></i>
+								</button>
+							</div>
+
+							<!-- Control de zoom -->
+							<div class="col-md-1" style="color:white">
+								<div class="onoffswitch" style="margin-left:1%;">
+									<input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="myonoffswitch" checked>
+									<label class="onoffswitch-label" for="myonoffswitch" >
+											<span class="onoffswitch-inner"></span>
+											<span class="onoffswitch-switch" style="height: 22px;"></span>
+									</label>
+								</div>
+							</div>
+
+							<!-- Cargar Rutas -->
+							<div class="col-md-5" style="color:white">
+								<div>
+									<select id="selectedRoute" class="form-control"
+										style="width: 40%; float: left; margin-right: 2%;">
+										<option value="Ruta 1">Ruta 1</option>
+										<option value="Ruta 2">Ruta 2</option>
+										<option value="Ruta 3">Ruta 3</option>
+										<option value="Ruta 4">Ruta 4</option>
+										<option value="Ruta 5">Ruta 5</option>
+									</select>
+									<button id="cargarRutaBtn" class="btn btn-success" data-toggle="tooltip" title="Cargar ruta">
+										<i class="glyphicon glyphicon-road"></i>
+									</button>
+									<button id="guardarRutaBtn" class="btn btn-success" data-toggle="tooltip" title="Guardar ruta">
+										<i class="glyphicon glyphicon-floppy-save"></i>
+									</button>
+									<button id="printButton" class="btn btn-primary" style="text-align:center; padding:2px; margin-left:5%">
+									</button>
+								</div>
+							</div>
+
+						</div>
+					</div>
+
+				</div>
+
+			</div>
+
+			</div>
+		</div>
+	</section>
+
+	<!-- Core JavaScript Files -->
+	<script src="js/jquery.min.js"></script>
+	<!--<script src="js/bootstrap.min.js"></script>-->
+	<script src="js/jquery.easing.min.js"></script>
+	<script src="js/jquery.scrollTo.js"></script>
+	<script src="js/wow.min.js"></script>
+	<!-- Custom Theme JavaScript -->
+	<script src="js/custom.js"></script>
+	<script>
+		$(document).ready(function(){
+		    $('[data-toggle="tooltip"]').tooltip();
+		});
+	</script>
+
+</body>
+
+</html>

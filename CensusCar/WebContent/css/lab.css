@@ -1,0 +1,164 @@
+html, body, #map {
+	height: 100%;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+}
+
+#search {
+	display: block;
+	position: absolute;
+	z-index: 2;
+	top: 4px;
+	left: 71%;
+}
+
+#map_zoom_slider{
+	left:97%;
+}
+
+#startBtn{
+	margin-left:1%;
+	border-radius: 50px;
+	border-width: 4px;
+	border-color: white;
+	padding: 14px 17px;
+}
+
+#stopBtn{
+	margin-left:1%;
+	border-radius: 50px;
+	border-width: 4px;
+	border-color: white;
+  padding: 14px 17px;
+}
+
+.listaPuntos{
+    display: block;
+    position: absolute;
+		min-width: 100%;
+    z-index: 2;
+    top: 30px;
+    left: 6%;
+}
+.esriPopup .contentPane{
+	background-color: #fff0 !important;
+	color: #376f50 !important;
+}
+
+.row-map{
+	padding-left: 0px;
+	padding-right: 0px;
+}
+.col-map{
+	padding-left: 0px;
+	padding-right: 50px;
+}
+
+.panel-title-map {
+    margin-top: 0;
+    margin-bottom: 0;
+    font-size: 12px;
+    color: inherit;
+}
+
+.instruc{
+	font-size: 20px;
+	color: #fff;
+}
+
+.top-nav-collapse {
+    background: #13945b;
+}
+
+.list-items {
+	margin-left: 2%;
+}
+
+.btn-link {
+	background: none !important;
+	padding: 0 !important;
+	font: inherit;
+	cursor: pointer;
+	margin-left: 2%;
+	text-decoration: underline;
+	outline: none;
+	border: 0px;
+}
+
+#map_zoom_slider {
+	z-index: 30;
+	top: 4px !important;
+}
+
+#logo {
+	height: 7%;
+	width: 7%;
+	margin-bottom: 2%;
+	margin-top: 1%;
+}
+
+#title-logo {
+	font-family: 'Special Elite', cursive;
+	font-size: 45px;
+	margin-top: 3%;
+}
+
+.clickable {
+	cursor: pointer;
+}
+
+.clickable .glyphicon {
+	background: rgba(0, 0, 0, 0.15);
+	display: inline-block;
+	padding: 6px 12px;
+	border-radius: 4px
+}
+
+.clickable .glyphicon-radio {
+	background: #fff;
+	display: inline-block;
+	padding: 6px 12px;
+	border-radius: 4px
+}
+
+.panel-heading span {
+	margin-top: -23px;
+	font-size: 15px;
+	margin-right: -9px;
+}
+
+a.clickable {
+	color: inherit;
+}
+
+a.clickable:hover {
+	text-decoration: none;
+}
+
+#population {
+	margin-top: 2%;
+}
+
+#radio-buffer {
+	margin-top: 2%;
+}
+
+#counties {
+	margin-top: 2%;
+}
+
+#km {
+	margin-top: 2%;
+}
+
+#vel {
+	margin-top: 2%;
+}
+
+#estados {
+	margin-top: 2%;
+}
+
+.esriPrint {
+    padding: 4px !important;
