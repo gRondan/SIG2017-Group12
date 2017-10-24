@@ -2,9 +2,9 @@
 
 
 //Dependencias
-require[
+require([
     "esri/widgets/Search"
-],
+]),
 
 //Funciones
 searchWidget.on("search-complete", function(event){
