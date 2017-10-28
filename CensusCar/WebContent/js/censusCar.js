@@ -7,11 +7,12 @@ require([
   "esri/Map",
   "esri/views/MapView",
   "esri/layers/TileLayer",
+  "esri/widgets/Search",
   "esri/tasks/Locator",
   "dojo/dom",
   "dojo/on",
   "dojo/domReady!"],
-  function (Map, MapView, Tiled, Locator, dom, on, domReady) {
+  function (Map, MapView, Tiled, Search, Locator, dom, on, domReady) {
 
    
       tiled = new Tiled(mapURL);
@@ -27,6 +28,18 @@ require([
         spatialReference: { wkid: 102100 },
         map: map
       });
+
+      var searchWidget = new Search({
+        view: mapView, 
+        sources: [{
+            locator: new Locator({ url: "//geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer" }),
+            singleLineFieldName: "SingleLine",
+            placeholder: "Find location in USA",
+            countryCode: "US"
+        }]
+      });
+      mapView.ui.add(searchWidget, {position: "top-left", index: 0});
+      
       function getToken(){
 
       }
