@@ -2,6 +2,10 @@ var map;
 var tiled
 var mapView
 var mapURL = "http://services.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer"
+var clientId = "mbeKLJKeIY6J2Gyz"
+var clientSecret = "ad9ed9d489b341988779aed7870e2b86"
+var responseToken
+var url = 
 
 require([
   "esri/Map",
@@ -13,6 +17,7 @@ require([
   "dojo/on",
   "dojo/domReady!"],
   function (Map, MapView, Tiled, Search, Locator, dom, on, domReady) {
+
 
       var points = [];
 
@@ -33,13 +38,30 @@ require([
         layers: [tiled]   
       });
 
-      mapView = new MapView({
-        container: "map",
-        zoom: 4, 
-        center: [-95,39], 
-        spatialReference: { wkid: 102100 },
-        map: map
+    mapView = new MapView({
+      container: "map",
+      zoom: 4,
+      center: [-95, 39],
+      spatialReference: { wkid: 102100 },
+      map: map
+    });
+    
+    
+    //FUNCIONES AUXILIARES
+    
+    function getToken(){
+      $.ajax({
+        type: "POST",
+        url: "https://www.arcgis.com/sharing/oauth2/token?client_id=mbeKLJKeIY6J2Gyz&grant_type=client_credentials&client_secret=ad9ed9d489b341988779aed7870e2b86&f=pjson",
+        //data: data,
+        success: (response) => {
+          console.log(response);
+          responseToken = response.access_token;
+      },
+        dataType: "json",
+        async: false
       });
+    }
 
       var searchWidget = new Search({
         view: mapView, 
