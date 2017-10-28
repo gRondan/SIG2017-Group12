@@ -133,14 +133,14 @@ require([
 
       points.push(point);
 
-      if (points.length === 3) {
+      /*if (points.length === 3) {
         calculateRoute();
-      }
+      }*/
 
       // Cambios en View
       //updateStopsList();
     }
-
+/*
     function calculateRoute() {
       RouteParameters = new RouteParameters({
         stops: new FeatureSet(),
@@ -150,7 +150,6 @@ require([
         RouteParameters.stops.features.push(points[i].graphic);
       };
       RouteTask = new RouteTask({
-        //url: "https://route.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World?token=fwk1izMxKT3KCiBHhrzmkM73UyyyB93oR9lOHtAKxneem7CwWgGgUsAfxjDEycDd_OFvNMjcsDd6oZEMZKv11VueLAWIgs5Cjkf6YWp6qJjqsmYIBit86uCjP5UY_7gzTYfoowjOZmo4YYxyBUR8QQ"
         url : routeURL + responseToken
       })
       console.log(routeURL+ responseToken);
@@ -163,7 +162,7 @@ require([
 
         current_route = routeResult;
     })
-    }
+    }*/
     function setLayers() {
       pointsLayer = new GraphicsLayer({
         title: "Directions",
@@ -184,4 +183,40 @@ require([
       map.layers.add(countiesLayer);
 
     }
+  });
+  require([
+    "esri/Map",
+    "esri/views/MapView",
+    "esri/layers/TileLayer",
+    "esri/Graphic",
+    "esri/layers/GraphicsLayer",
+    "esri/widgets/Search",
+    "esri/tasks/Locator",
+    "dojo/dom",
+    "dojo/on",
+    "dojo/domReady!",
+    "esri/tasks/RouteTask",
+    "esri/tasks/support/RouteParameters",
+    "esri/tasks/support/FeatureSet"],
+  function calculateRoute(Map, MapView, Tiled, Graphic, GraphicsLayer, Search, Locator, dom, on, domReady, RouteTask, RouteParameters, FeatureSet) {
+    RouteParameters = new RouteParameters({
+      stops: new FeatureSet(),
+      outSpatialReference: { wkid: 102100 }
+    })
+    for (i = 0; i < points.length; i++) {
+      RouteParameters.stops.features.push(points[i].graphic);
+    };
+    RouteTask = new RouteTask({
+      url : routeURL + responseToken
+    })
+    console.log(routeURL+ responseToken);
+    var RouteResoults = RouteTask.solve(RouteParameters)
+    .then((data) => {
+      var routeResult = data.routeResults[0].route;
+      routeResult.symbol = routeGraphic;
+      routesLayer.removeAll();
+      routesLayer.add(routeResult);
+
+      current_route = routeResult;
+  })
   });
