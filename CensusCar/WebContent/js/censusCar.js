@@ -16,14 +16,7 @@ require([
   "dojo/dom",
   "dojo/on",
   "dojo/domReady!"],
-<<<<<<< HEAD
   function (Map, MapView, Tiled, Search, Locator, dom, on, domReady) {
-=======
-  function (Map, MapView, Tiled, Locator,
-    dom, on, domReady) {
-    getToken2();
-    tiled = new Tiled(mapURL);
->>>>>>> Gio
 
     map = new Map({
       layers: [tiled]
@@ -40,20 +33,7 @@ require([
     
     //FUNCIONES AUXILIARES
     
-    function getToken() {
-      var xhr = new XMLHttpRequest();
-      xhr.onreadystatechange = function() {
-          if (xhr.readyState == XMLHttpRequest.DONE) {
-              alert(xhr.responseText);
-          }
-      }
-      xhr.open('GET','https://www.arcgis.com/sharing/oauth2/token?client_id=mbeKLJKeIY6J2Gyz&grant_type=client_credentials&client_secret=ad9ed9d489b341988779aed7870e2b86&f=pjson', true);
-      xhr.send(null);
-      //xhr.onreadystatechange = processRequest;
-      var response = JSON.parse(xhr.responseText);
-
-    }
-    function getToken2(){2
+    function getToken(){
       $.ajax({
         type: "POST",
         url: "https://www.arcgis.com/sharing/oauth2/token?client_id=mbeKLJKeIY6J2Gyz&grant_type=client_credentials&client_secret=ad9ed9d489b341988779aed7870e2b86&f=pjson",
@@ -77,14 +57,6 @@ require([
       });
       mapView.ui.add(searchWidget, {position: "top-left", index: 0});
       
-      function getToken(){
-    }
 
-    function processRequest(e) {
-      if (xhr.readyState == 4 && xhr.status == 200) {
-          var response = JSON.parse(xhr.responseText);
-          
-          alert(response.ip);
-      }
-  }
+   
   });
