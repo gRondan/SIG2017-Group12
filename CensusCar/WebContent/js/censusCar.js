@@ -40,9 +40,9 @@ require([
     //Marcador de los puntos buscados
     var pointMarker = {
       type: "simple-marker",
-      color: [226, 119, 40],
+      color: [255, 0, 0],
       outline: {
-        color: [255, 255, 255],
+        color: [0, 0, 187],
         width: 2
       }
     };
