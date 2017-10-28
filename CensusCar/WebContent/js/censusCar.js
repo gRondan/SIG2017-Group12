@@ -26,8 +26,7 @@ require([
   "dojo/dom",
   "dojo/on",
   "dojo/domReady!"],
-  function (Map, MapView, Tiled,Locator, 
-     dom, on, domReady) {
+  function (Map, MapView, Tiled, Locator, dom, on, domReady) {
 
    
       var tiled = new Tiled("http://services.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer");
