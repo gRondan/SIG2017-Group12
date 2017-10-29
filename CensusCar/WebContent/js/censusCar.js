@@ -10,6 +10,8 @@ var url
 var routeURL = "https://route.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World?token="
 var points = []
 var directionsArray = []
+var simulating = false;
+var current_route = null;
 //LAYERS
 var pointsLayer
 var routesLayer
@@ -68,9 +70,12 @@ require([
   "dojo/domReady!",
   "esri/tasks/RouteTask",
   "esri/tasks/support/RouteParameters",
+  "esri/tasks/GeometryService",
+  "esri/tasks/support/DensifyParameters",
+  "esri/geometry/geometryEngine",
   "esri/tasks/support/FeatureSet",
   "esri/layers/FeatureLayer",],
-  function (Map, MapView, Tiled, Graphic, GraphicsLayer, Search, Locator, dom, on, domReady, RouteTask, RouteParameters, FeatureSet,FeatureLayer) {
+  function (Map, MapView, Tiled, Graphic, GraphicsLayer, Search, Locator, dom, on, domReady, RouteTask, RouteParameters, GeometryService, DensifyParameters, geometryEngine, FeatureSet,FeatureLayer) {
 
     getToken();
 
@@ -83,6 +88,9 @@ require([
     });
 
     setLayers();
+
+    // Se define el servicio para operaciones espaciales
+    var geometrySvc = new GeometryService({url: "https://sampleserver6.arcgisonline.com/arcgis/rest/services/Utilities/Geometry/GeometryServer"});
 
     mapView = new MapView({
       container: "map",
@@ -158,8 +166,8 @@ require([
       return new Graphic({
               geometry: {
                   type: "point",
-                  x: lng,
-                  y: lat,
+                  x: lng,//longitude: lng,
+                  y: lat,//latitude: lat,
                   spatialReference: { wkid: 102100 }
               },
               symbol: carGraphic
@@ -189,16 +197,7 @@ require([
 
               current_route = routeResult;
             })
-          var car = new Graphic({
-            geometry: {
-                type: "point",
-                longitude: points[0].geometry.longitude,
-                latitude: points[0].geometry.latitude,
-                spatialReference: { wkid: 102100 }
-            },
-            symbol: carGraphic
-          });
-        //createCarGraphyc(points[0].geometry.longitude, points[0].geometry.latitude);
+          var car = createCarGraphyc(points[0].geometry.x, points[0].geometry.y);
           carLayer.add(car);
           directionsFeatureLayer.applyEdits({
             addFeatures : directionsArray
@@ -210,6 +209,41 @@ require([
               console.log("error: "+err);
               
           })
+        }
+      };
+      document.getElementById("playSimulation").onclick = function startSimulation(){
+        if(current_route){
+            if(simulating){
+                //showToast("Hay una simulación en curso.", "error");
+                return;
+            }
+            simulating = true;
+            //velocityLyr.removeAll();
+            //chgSimBtn();
+            
+            var simulation = {
+                iteration: 0,
+                buffer_size: 1, //getBufferSize(),
+                segment_length: 500, // 100m
+                step: 1, //getSimStep(),
+                travelled_length: 0, // km
+                last_exec_time: 0,
+                coordinates: null
+            }
+
+            // Se obtiene la ruta como una serie de puntos equidistantes
+            // Se utiliza Geometry Engine o Service dependiendo del modo
+            getDensify(simulation).then(path => {
+                simulation.coordinates = path;
+                simulation.last_exec_time = performance.now();
+                
+                //disableSimButtons();
+                //showToast("Simulación iniciada", "info");
+                updateSimulation(simulation);
+            });
+        }else{
+            //showToast("Primero debe indicarse una ruta.", "error");
+            return;
         }
       }
     }
@@ -244,8 +278,6 @@ require([
     function setFeatureLayers() {
       directionsFeatureLayer = new FeatureLayer({
         url: "http://sampleserver5.arcgisonline.com/arcgis/rest/services/LocalGovernment/Events/FeatureServer/0",
-        //outFields: ["*"],
-        //visible: false,
         spatialReference: { wkid: 102100 }
       });
       map.layers.add(directionsFeatureLayer);
@@ -258,6 +290,249 @@ require([
 
     }
 
+    //SIMULACION
+    // Comienza la simulación
+    /*window.onload = function playRoute() {
+      document.getElementById("playSimulation").onclick = function startSimulation(){
+        if(current_route){
+            if(simulating){
+                //showToast("Hay una simulación en curso.", "error");
+                return;
+            }
+            simulating = true;
+            //velocityLyr.removeAll();
+            //chgSimBtn();
+            
+            var simulation = {
+                iteration: 0,
+                buffer_size: 1, //getBufferSize(),
+                segment_length: 500, // 100m
+                step: 1, //getSimStep(),
+                travelled_length: 0, // km
+                last_exec_time: 0,
+                coordinates: null
+            }
+
+            // Se obtiene la ruta como una serie de puntos equidistantes
+            // Se utiliza Geometry Engine o Service dependiendo del modo
+            getDensify(simulation).then(path => {
+                simulation.coordinates = path;
+                simulation.last_exec_time = performance.now();
+                
+                //disableSimButtons();
+                //showToast("Simulación iniciada", "info");
+                updateSimulation(simulation);
+            });
+        }else{
+            //showToast("Primero debe indicarse una ruta.", "error");
+            return;
+        }
+      }
+    }*/
+
+    // Para la simulación
+    function stopSimulation(){
+      if(simulating){
+          simulating = false;
+          
+          //chgSimBtn();
+          //enableSimButtons();
+          //showToast("Simulación finalizada!", "info");
+      }else{
+          //showToast("No hay una simulación en curso", "error");
+      }
+  }
+
+    // Actualiza el mapa durante la simulación
+    function updateSimulation(simulation){
+      if(simulating){
+          // Si ya no tengo mas coordenadas termino
+          if(simulation.iteration >= simulation.coordinates.length){
+              stopSimulation();
+              return;
+          }
+
+          // Si me paso lo seteo en el ultimo
+          if(simulation.iteration + simulation.step >= simulation.coordinates.length){
+             simulation.iteration = simulation.coordinates.length-1; 
+          }
+
+          // Busca la coordenada, crea el marcador.
+          var next_coordinate = simulation.coordinates[simulation.iteration];
+          var new_marker = createCarGraphyc(next_coordinate[0], next_coordinate[1]);
+          carLayer.removeAll();
+          carLayer.add(new_marker);
+          simulation.step = 1; //getSimStep();
+          simulation.buffer_size = 1; //getBufferSize();
+
+          simulation.iteration += simulation.step;
+          simulation.travelled_length += simulation.segment_length * simulation.step;
+          simulation.last_exec_time = performance.now();
+          updateSimulation(simulation);
+
+          // Calculo el buffer y lo agrego a la capa con el móvil.
+          /*getBuffer(new_marker, simulation).then(buffer => {
+              if(simulating){
+                  var counties = queryCounty(buffer, simulation);
+                  var states = queryState(buffer, simulation);
+
+                  // Cuando terminen las queries se renderizan
+                  Promise.all([counties, states])
+                  .then(results => {
+                      if(simulating){
+                          var stateGraphics = [];
+                          var countiesGraphics = [];
+                          var content = "";
+                          var counties_promise = Promise.resolve(false);
+
+                          if(results[1]){
+                              content += `
+                                  <b>Estados intersectados: </b><br/>
+                                  <ul>
+                              `;
+                              results[1].forEach(state => {
+                                  stateGraphics.push(state.graphic);
+                                  content += `
+                                      <li>${state.name}, ${state.st_abbrev}</li>
+                                  `;
+                              });
+                              content += `
+                                  </ul>
+                              `;
+                          }
+                          if(results[0]){
+                              content += `
+                                  <b>Condados intersectados: </b><br/>
+                                  <ul>
+                              `;
+                              var population_promises = [];
+                              results[0].forEach(county => {
+                                  countiesGraphics.push(county.graphic);
+                                  population_promises.push(
+                                      getLocalPopulation(buffer, county)
+                                      .then(local_population => {
+                                          var population_percentage = Math.round((local_population / county.total_population) * 100); 
+                                          return {
+                                              local_population: local_population,
+                                              county_population: county.total_population,
+                                              list_item: `<li>${county.name}, ${county.st_abbrev} - ${local_population}/${county.total_population} (%${population_percentage})</li>`
+                                          }
+                                      }
+                                  ));
+                              });
+
+                              counties_promise = Promise.all(population_promises)
+                              .then(counties_info => {
+                                  var total_local_population = 0;
+                                  var total_county_population = 0;
+                                  counties_list = "";
+                                  counties_info.forEach(county_info => {
+                                      total_local_population += county_info.local_population;
+                                      total_county_population += county_info.county_population;
+                                      counties_list += county_info.list_item;
+                                  });
+
+                                  var population_percentage = Math.round((total_local_population / total_county_population) * 100); 
+                                  var travelled_distance = simulation.travelled_length >= 1000 ? 
+                                      (simulation.travelled_length / 1000).toFixed(1) + "km" :
+                                      (simulation.travelled_length) + "m";
+                                  var step_distance = simulation.step * simulation.segment_length >= 1000 ? 
+                                      (simulation.step * simulation.segment_length / 1000).toFixed(1) + "km" : 
+                                      (simulation.step * simulation.segment_length) + "m";
+                                  // var actual_velocity = Math.round((simulation.segment_length / 1000) / ((performance.now() - simulation.last_exec_time) / 3600000));
+                                  content += counties_list;
+                                  content += `
+                                      </ul>
+                                      <b>Población total en el buffer: ${total_local_population} (%${population_percentage})</b>
+                                      <hr/>
+                                      <b>Distancia recorrida: ${travelled_distance}</b><br/>
+                                      <b>Distancia por iteración: ${step_distance}</b>
+                                  `;
+                                  return true;
+                              });
+                          }
+
+                          Promise.all([counties_promise])
+                          .then(results => {
+                              if(simulating){
+                                  if(results[0]){
+                                      // graphics.push(new_marker);
+                                      // graphics.push(buffer);
+
+                                      mobileLyr.removeAll();
+                                      mobileLyr.addMany([new_marker, buffer]);
+
+                                      countiesLyr.removeAll();
+                                      countiesLyr.addMany(countiesGraphics);
+
+                                      statesLyr.removeAll();
+                                      statesLyr.addMany(stateGraphics);
+
+                                      // Actualizo el popup
+                                      view.popup.open({
+                                          title: "Información de la simulación",
+                                          content: content,
+                                          dockEnabled: true,
+                                          dockOptions: {
+                                              breakpoint: false,
+                                              buttonEnabled: false,
+                                              position: "top-right"
+                                          }
+                                      });
+
+                                      updateVelocityLine(simulation);
+                                      simulation.step = getSimStep();
+                                      simulation.buffer_size = getBufferSize();
+
+                                      simulation.iteration += simulation.step;
+                                      simulation.travelled_length += simulation.segment_length * simulation.step;
+                                      simulation.last_exec_time = performance.now();
+                                      updateSimulation(simulation);
+                                  }
+                              }
+                          });
+                      }
+                  });
+              }
+          });*/
+      }
+    }
+
+    
+    // Obtiene la ruta actual como una serie de puntos equidistantes
+    function getDensify(simulation){
+      var path_promise;
+      /*if(mode == "service"){
+          var densifyParams = new DensifyParameters({
+              geometries: [current_route.geometry],
+              lengthUnit: "meters",
+              maxSegmentLength: simulation.segment_length,
+              geodesic: true
+          });
+
+          path_promise = geometrySvc.densify(densifyParams)
+          .then(data => {
+              return data[0].paths[0];
+          })
+          .catch(err => {
+              alert("Error al calcular los puntos de ruta");
+              console.log("Densify: ", err);
+          });
+      } else if(mode == "engine"){*/
+          path_promise = Promise.resolve(
+              geometryEngine.densify(current_route.geometry, simulation.segment_length, "meters").paths[0]
+          );
+      //}
+
+      return Promise.all([path_promise])
+      .then(paths => {
+          return paths[0];
+      })
+      .catch(err => {
+        alert("Error al calcular los puntos de ruta");
+        console.log("Densify: ", err);
+      });
+    }
     
 
   });
