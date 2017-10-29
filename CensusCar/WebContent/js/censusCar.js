@@ -12,11 +12,43 @@ var points = []
 var pointsLayer
 var routesLayer
 var countiesLayer
-
+var carLayer
+//Estilo de la ruta
 var routeGraphic = {
   type: "simple-line",
   color: "grey",
   width: 4,
+};
+//Marcador de los puntos buscados
+var pointMarker = {
+  type: "simple-marker",
+  color: [255, 0, 0],
+  outline: {
+    color: [0, 0, 187],
+    width: 2
+  }
+};
+//Imagen del vehiculo
+var carGraphic = {
+  type: "picture-marker",
+  url: "img/car.png",
+  width: "40px",
+  height: "40px"
+};
+//Estilo del buffer del vehiculo
+var bufferGraphic = {
+  type: "simple-fill",
+  color: [140, 140, 222, 0.5],
+  outline: {
+      color: [0, 0, 0, 0.5],
+      width: 2
+  }
+};
+//Estilo del poligono de los condados
+var countyGraphic = {
+  type: "simple-fill",
+  color: [247, 153, 71, 0.3],
+  width: 3
 };
 
 require([
@@ -35,18 +67,6 @@ require([
   "esri/tasks/support/FeatureSet"],
   function (Map, MapView, Tiled, Graphic, GraphicsLayer, Search, Locator, dom, on, domReady, RouteTask, RouteParameters, FeatureSet) {
 
-
-
-    //Marcador de los puntos buscados
-    var pointMarker = {
-      type: "simple-marker",
-      color: [255, 0, 0],
-      outline: {
-        color: [0, 0, 187],
-        width: 2
-      }
-    };
-
     getToken();
 
     //Capa Tiled pedida en letra de obligatorio
@@ -59,8 +79,6 @@ require([
 
     setLayers();
 
-
-
     mapView = new MapView({
       container: "map",
       zoom: 4,
@@ -68,12 +86,6 @@ require([
       spatialReference: { wkid: 102100 },
       map: map
     });
-
-
-
-
-
-
 
     //Creación del buscador
     var searchWidget = new Search({
@@ -97,7 +109,6 @@ require([
           geometry: result.result.feature.geometry,
           symbol: pointMarker,
           spatialReference: { wkid: 102100 },
-          // Atributos para el servidor de eventos
           attributes: {
             event_type: "17",
             description: result.result.name
@@ -105,7 +116,6 @@ require([
         })
       };
       addPoint(point);
-      console.log("The selected search result: ", points);
     });
 
     //FUNCIONES AUXILIARES
@@ -116,7 +126,6 @@ require([
         url: tokenURL,
         //data: data,
         success: (response) => {
-          console.log(response);
           responseToken = response.access_token;
         },
         dataType: "json",
@@ -137,6 +146,19 @@ require([
       //updateStopsList();
     }
 
+    // Crea el marcador del móvil
+    function createCarGraphyc(lng, lat){
+      return new Graphic({
+              geometry: {
+                  type: "point",
+                  x: lng,
+                  y: lat,
+                  spatialReference: { wkid: 102100 }
+              },
+              symbol: carGraphic
+          });
+    }
+
     window.onload = function calculateRoute() {
       document.getElementById("findRoute").onclick = function findRoute() {
         RouteParameters = new RouteParameters({
@@ -149,7 +171,6 @@ require([
         RouteTask = new RouteTask({
           url: routeURL + responseToken
         })
-        console.log(routeURL + responseToken);
         var RouteResoults = RouteTask.solve(RouteParameters)
           .then((data) => {
             var routeResult = data.routeResults[0].route;
@@ -159,6 +180,18 @@ require([
 
             current_route = routeResult;
           })
+        var car = new Graphic({
+          geometry: {
+              type: "point",
+              longitude: points[0].geometry.longitude,
+              latitude: points[0].geometry.latitude,
+              spatialReference: { wkid: 102100 }
+          },
+          symbol: carGraphic
+        });
+      //createCarGraphyc(points[0].geometry.longitude, points[0].geometry.latitude);
+        carLayer.add(car);
+        console.log(car);
       }
     }
   
@@ -181,5 +214,11 @@ require([
       });
       map.layers.add(countiesLayer);
 
+      carLayer = new GraphicsLayer();
+      map.layers.add(carLayer);
+
     }
+
+    
+
   });

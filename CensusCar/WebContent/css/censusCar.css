@@ -5,6 +5,14 @@ html, body, #map {
     height: 97%;
     width: 100%;
 }
+
+#menu {
+    padding: 0;
+    margin: 0;
+    height: 3%;
+    width: 100%;
+}
+
 #content {
     padding: 0;
     height: 100%;
