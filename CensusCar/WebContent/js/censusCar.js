@@ -36,8 +36,8 @@ var pointMarker = {
 var carGraphic = {
   type: "picture-marker",
   url: "img/car.png",
-  width: "40px",
-  height: "40px"
+  width: "50px",
+  height: "50px"
 };
 //Estilo del buffer del vehiculo
 var bufferGraphic = {
@@ -168,47 +168,49 @@ require([
 
     window.onload = function calculateRoute() {
       document.getElementById("findRoute").onclick = function findRoute() {
-        RouteParameters = new RouteParameters({
-          stops: new FeatureSet(),
-          outSpatialReference: { wkid: 102100 }
-        })
-        for (i = 0; i < points.length; i++) {
-          RouteParameters.stops.features.push(points[i].graphic);
-          directionsArray.push(points[i].graphic);
-        };
-        RouteTask = new RouteTask({
-          url: routeURL + responseToken
-        })
-        var RouteResoults = RouteTask.solve(RouteParameters)
-          .then((data) => {
-            var routeResult = data.routeResults[0].route;
-            routeResult.symbol = routeGraphic;
-            routesLayer.removeAll();
-            routesLayer.add(routeResult);
-
-            current_route = routeResult;
+        if (points.length >= 2){
+          RouteParameters = new RouteParameters({
+            stops: new FeatureSet(),
+            outSpatialReference: { wkid: 102100 }
           })
-        var car = new Graphic({
-          geometry: {
-              type: "point",
-              longitude: points[0].geometry.longitude,
-              latitude: points[0].geometry.latitude,
-              spatialReference: { wkid: 102100 }
-          },
-          symbol: carGraphic
-        });
-      //createCarGraphyc(points[0].geometry.longitude, points[0].geometry.latitude);
-        carLayer.add(car);
-        directionsFeatureLayer.applyEdits({
-          addFeatures : directionsArray
-        })
-        .then(() => {
-          console.log("Save Stops ok "); 
-        })
-        .catch(err => {
-            console.log("error: "+err);
-            
-        })
+          for (i = 0; i < points.length; i++) {
+            RouteParameters.stops.features.push(points[i].graphic);
+            directionsArray.push(points[i].graphic);
+          };
+          RouteTask = new RouteTask({
+            url: routeURL + responseToken
+          })
+          var RouteResoults = RouteTask.solve(RouteParameters)
+            .then((data) => {
+              var routeResult = data.routeResults[0].route;
+              routeResult.symbol = routeGraphic;
+              routesLayer.removeAll();
+              routesLayer.add(routeResult);
+
+              current_route = routeResult;
+            })
+          var car = new Graphic({
+            geometry: {
+                type: "point",
+                longitude: points[0].geometry.longitude,
+                latitude: points[0].geometry.latitude,
+                spatialReference: { wkid: 102100 }
+            },
+            symbol: carGraphic
+          });
+        //createCarGraphyc(points[0].geometry.longitude, points[0].geometry.latitude);
+          carLayer.add(car);
+          directionsFeatureLayer.applyEdits({
+            addFeatures : directionsArray
+          })
+          .then(() => {
+            console.log("Save Stops ok "); 
+          })
+          .catch(err => {
+              console.log("error: "+err);
+              
+          })
+        }
       }
     }
 
