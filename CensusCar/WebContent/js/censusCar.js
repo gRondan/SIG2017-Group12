@@ -12,12 +12,8 @@ var directionsFeatureLayerURL = "http://sampleserver5.arcgisonline.com/arcgis/re
 var routesFeatureLayerURL = "http://sampleserver5.arcgisonline.com/arcgis/rest/services/LocalGovernment/Recreation/FeatureServer/1"
 var points = []
 var directionsArray = []
-<<<<<<< HEAD
 var simulating = false;
 var current_route = null;
-=======
-var current_route
->>>>>>> 2540631ede18ea62ccbac4161831a49810800f7a
 //LAYERS
 var pointsLayer
 var routesLayer
@@ -91,14 +87,9 @@ require([
   "esri/tasks/support/DensifyParameters",
   "esri/geometry/geometryEngine",
   "esri/tasks/support/FeatureSet",
-<<<<<<< HEAD
-  "esri/layers/FeatureLayer",],
-  function (Map, MapView, Tiled, Graphic, GraphicsLayer, Search, Locator, dom, on, domReady, RouteTask, RouteParameters, GeometryService, DensifyParameters, geometryEngine, FeatureSet,FeatureLayer) {
-=======
   "esri/layers/FeatureLayer",
   "esri/tasks/QueryTask", "esri/tasks/support/Query"],
-  function (Map, MapView, Tiled, Graphic, GraphicsLayer, Search, Locator, dom, on, domReady, RouteTask, RouteParameters, FeatureSet, FeatureLayer, QueryTask, Query) {
->>>>>>> 2540631ede18ea62ccbac4161831a49810800f7a
+  function (Map, MapView, Tiled, Graphic, GraphicsLayer, Search, Locator, dom, on, domReady, RouteTask, RouteParameters, GeometryService, DensifyParameters, geometryEngine, FeatureSet,FeatureLayer, QueryTask, Query) {
 
     getToken();
     prepareQueries();
@@ -192,7 +183,6 @@ require([
     // Crea el marcador del móvil
     function createCarGraphyc(lng, lat) {
       return new Graphic({
-<<<<<<< HEAD
               geometry: {
                   type: "point",
                   x: lng,//longitude: lng,
@@ -201,16 +191,6 @@ require([
               },
               symbol: carGraphic
           });
-=======
-        geometry: {
-          type: "point",
-          x: lng,
-          y: lat,
-          spatialReference: { wkid: 102100 }
-        },
-        symbol: carGraphic
-      });
->>>>>>> 2540631ede18ea62ccbac4161831a49810800f7a
     }
 
     window.onload = function calculateRoute() {
@@ -268,20 +248,7 @@ require([
 
 
             })
-<<<<<<< HEAD
           var car = createCarGraphyc(points[0].geometry.x, points[0].geometry.y);
-=======
-          var car = new Graphic({
-            geometry: {
-              type: "point",
-              longitude: points[0].geometry.longitude,
-              latitude: points[0].geometry.latitude,
-              spatialReference: { wkid: 102100 }
-            },
-            symbol: carGraphic
-          });
-          //createCarGraphyc(points[0].geometry.longitude, points[0].geometry.latitude);
->>>>>>> 2540631ede18ea62ccbac4161831a49810800f7a
           carLayer.add(car);
           directionsFeatureLayer.applyEdits({
             addFeatures: directionsArray
@@ -302,7 +269,6 @@ require([
             });
 
         }
-<<<<<<< HEAD
       };
       document.getElementById("playSimulation").onclick = function startSimulation(){
         if(current_route){
@@ -338,10 +304,6 @@ require([
             //showToast("Primero debe indicarse una ruta.", "error");
             return;
         }
-=======
-
-
->>>>>>> 2540631ede18ea62ccbac4161831a49810800f7a
       }
     }
 
@@ -374,13 +336,9 @@ require([
 
     function setFeatureLayers() {
       directionsFeatureLayer = new FeatureLayer({
-<<<<<<< HEAD
-        url: "http://sampleserver5.arcgisonline.com/arcgis/rest/services/LocalGovernment/Events/FeatureServer/0",
-=======
         url: directionsFeatureLayerURL,
         //outFields: ["*"],
         //visible: false,
->>>>>>> 2540631ede18ea62ccbac4161831a49810800f7a
         spatialReference: { wkid: 102100 }
       });
       map.layers.add(directionsFeatureLayer);
@@ -398,7 +356,6 @@ require([
 
     }
 
-<<<<<<< HEAD
     //SIMULACION
     // Comienza la simulación
     /*window.onload = function playRoute() {
@@ -643,7 +600,6 @@ require([
       });
     }
     
-=======
     function prepareQueries() {
       directionsQueryTask = new QueryTask({
         url: directionsFeatureLayerURL
@@ -652,7 +608,6 @@ require([
       directionsQuery.returnGeometry = true;
       directionsQuery.outFields = ["*"];
       directionsQuery.where = "event_type = '17'";
->>>>>>> 2540631ede18ea62ccbac4161831a49810800f7a
 
       routeQueryTask = new QueryTask({
         url: routesFeatureLayerURL
