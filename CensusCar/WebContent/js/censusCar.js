@@ -48,16 +48,16 @@ var pointMarker = {
 var carGraphic = {
   type: "picture-marker",
   url: "img/car.png",
-  width: "40px",
-  height: "40px"
+  width: "50px",
+  height: "50px"
 };
 //Estilo del buffer del vehiculo
 var bufferGraphic = {
   type: "simple-fill",
   color: [140, 140, 222, 0.5],
   outline: {
-      color: [0, 0, 0, 0.5],
-      width: 2
+    color: [0, 0, 0, 0.5],
+    width: 2
   }
 };
 //Estilo del poligono de los condados
@@ -85,12 +85,12 @@ require([
   "esri/tasks/support/FeatureSet",
   "esri/layers/FeatureLayer",
   "esri/tasks/QueryTask", "esri/tasks/support/Query"],
-  function (Map, MapView, Tiled, Graphic, GraphicsLayer, Search, Locator, dom, on, domReady, RouteTask, RouteParameters, FeatureSet,FeatureLayer,QueryTask,Query) {
+  function (Map, MapView, Tiled, Graphic, GraphicsLayer, Search, Locator, dom, on, domReady, RouteTask, RouteParameters, FeatureSet, FeatureLayer, QueryTask, Query) {
 
     getToken();
     prepareQueries();
 
-    
+
 
 
 
@@ -174,103 +174,105 @@ require([
     }
 
     // Crea el marcador del móvil
-    function createCarGraphyc(lng, lat){
+    function createCarGraphyc(lng, lat) {
       return new Graphic({
-              geometry: {
-                  type: "point",
-                  x: lng,
-                  y: lat,
-                  spatialReference: { wkid: 102100 }
-              },
-              symbol: carGraphic
-          });
+        geometry: {
+          type: "point",
+          x: lng,
+          y: lat,
+          spatialReference: { wkid: 102100 }
+        },
+        symbol: carGraphic
+      });
     }
 
     window.onload = function calculateRoute() {
       document.getElementById("findRoute").onclick = function findRoute() {
-        RouteParameters = new RouteParameters({
-          stops: new FeatureSet(),
-          outSpatialReference: { wkid: 102100 }
-        })
-        for (i = 0; i < points.length; i++) {
-          RouteParameters.stops.features.push(points[i].graphic);
-          directionsArray.push(points[i].graphic);
-        };
-        RouteTask = new RouteTask({
-          url: routeURL + responseToken
-        })
-        var RouteResoults = RouteTask.solve(RouteParameters)
-          .then((data) => {
-            var routeResult = data.routeResults[0].route;
-            routeResult.symbol = routeStyle;
-            console.log("entra then");
-            routesLayer.removeAll();
-            routesLayer.add(routeResult);
+        if (points.length >= 2) {
 
-            current_route = routeResult;
-            console.log(current_route);
+          RouteParameters = new RouteParameters({
+            stops: new FeatureSet(),
+            outSpatialReference: { wkid: 102100 }
+          })
+          for (i = 0; i < points.length; i++) {
+            RouteParameters.stops.features.push(points[i].graphic);
+            directionsArray.push(points[i].graphic);
+          };
+          RouteTask = new RouteTask({
+            url: routeURL + responseToken
+          })
+          var RouteResoults = RouteTask.solve(RouteParameters)
+            .then((data) => {
+              var routeResult = data.routeResults[0].route;
+              routeResult.symbol = routeStyle;
+              console.log("entra then");
+              routesLayer.removeAll();
+              routesLayer.add(routeResult);
 
-            var routeGraphic = new Graphic();
-            routeGraphic.geometry = current_route.geometry;
-            routeGraphic.attributes = {
-              name: "routeGraphic",
-              trailtype: 4
-            };
-            routesFeatureLayer.applyEdits({
-              addFeatures: [routeGraphic]
-            }) .then(() => {
-              console.log("Save routes ok ");
-              routeQueryTask.execute(routeQuery).then(function(results){
-                console.log("routeQueryTask execute ok");
-                console.log(results.features);
+              current_route = routeResult;
+              console.log(current_route);
+
+              var routeGraphic = new Graphic();
+              routeGraphic.geometry = current_route.geometry;
+              routeGraphic.attributes = {
+                name: "routeGraphic",
+                trailtype: 4
+              };
+              routesFeatureLayer.applyEdits({
+                addFeatures: [routeGraphic]
+              }).then(() => {
+                console.log("Save routes ok ");
+                routeQueryTask.execute(routeQuery).then(function (results) {
+                  console.log("routeQueryTask execute ok");
+                  console.log(results.features);
+                })
+                  .catch(err => {
+                    console.log("error query: " + err);
+                  });
               })
-              .catch(err => {
-                console.log("error query: " + err);
-              }); 
-            })
-            .catch(err => {
-                console.log("error: "+err);
-                
-            });
-            
-          }).catch(err => {
-            console.log("error: "+err);
+                .catch(err => {
+                  console.log("error: " + err);
 
-            
-            
-        })
-        var car = new Graphic({
-          geometry: {
+                });
+
+            }).catch(err => {
+              console.log("error: " + err);
+
+
+
+            })
+          var car = new Graphic({
+            geometry: {
               type: "point",
               longitude: points[0].geometry.longitude,
               latitude: points[0].geometry.latitude,
               spatialReference: { wkid: 102100 }
-          },
-          symbol: carGraphic
-        });
-      //createCarGraphyc(points[0].geometry.longitude, points[0].geometry.latitude);
-        carLayer.add(car);
-        directionsFeatureLayer.applyEdits({
-          addFeatures : directionsArray
-        })
-        .then(() => {
-          console.log("Save Stops ok "); 
-        })
-        .catch(err => {
-            console.log("error: "+err);
-            
-        })
-        directionsQueryTask.execute(directionsQuery).then(function(results){
-          console.log("directionsQueryTask execute ok");
-          console.log(results.features);
-        })
-        .catch(err => {
-          console.log("error query: " + err);
-        });
+            },
+            symbol: carGraphic
+          });
+          //createCarGraphyc(points[0].geometry.longitude, points[0].geometry.latitude);
+          carLayer.add(car);
+          directionsFeatureLayer.applyEdits({
+            addFeatures: directionsArray
+          })
+            .then(() => {
+              console.log("Save Stops ok ");
+            })
+            .catch(err => {
+              console.log("error: " + err);
 
-        
-        
-        
+            })
+          directionsQueryTask.execute(directionsQuery).then(function (results) {
+            console.log("directionsQueryTask execute ok");
+            console.log(results.features);
+          })
+            .catch(err => {
+              console.log("error query: " + err);
+            });
+
+        }
+
+
       }
     }
 
@@ -280,7 +282,7 @@ require([
     }
 
 
-    
+
     function setGraphicLayers() {
       pointsLayer = new GraphicsLayer({
         title: "Directions",
@@ -321,9 +323,9 @@ require([
       carLayer = new GraphicsLayer();
       map.layers.add(carLayer);
 
-    }    
+    }
 
-    function prepareQueries(){
+    function prepareQueries() {
       directionsQueryTask = new QueryTask({
         url: directionsFeatureLayerURL
       });
@@ -331,7 +333,7 @@ require([
       directionsQuery.returnGeometry = true;
       directionsQuery.outFields = ["*"];
       directionsQuery.where = "event_type = '17'";
-      
+
       routeQueryTask = new QueryTask({
         url: routesFeatureLayerURL
       });
