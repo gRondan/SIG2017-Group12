@@ -9,9 +9,12 @@ var responseToken
 var url
 var routeURL = "https://route.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World?token="
 var points = []
+var directionsArray = []
+//LAYERS
 var pointsLayer
 var routesLayer
 var countiesLayer
+var directionsFeatureLayer
 
 var routeGraphic = {
   type: "simple-line",
@@ -32,8 +35,9 @@ require([
   "dojo/domReady!",
   "esri/tasks/RouteTask",
   "esri/tasks/support/RouteParameters",
-  "esri/tasks/support/FeatureSet"],
-  function (Map, MapView, Tiled, Graphic, GraphicsLayer, Search, Locator, dom, on, domReady, RouteTask, RouteParameters, FeatureSet) {
+  "esri/tasks/support/FeatureSet",
+  "esri/layers/FeatureLayer",],
+  function (Map, MapView, Tiled, Graphic, GraphicsLayer, Search, Locator, dom, on, domReady, RouteTask, RouteParameters, FeatureSet,FeatureLayer) {
 
 
 
@@ -133,6 +137,8 @@ require([
 
       points.push(point);
 
+      saveDirection();
+
       // Cambios en View
       //updateStopsList();
     }
@@ -145,6 +151,7 @@ require([
         })
         for (i = 0; i < points.length; i++) {
           RouteParameters.stops.features.push(points[i].graphic);
+          directionsArray.push(points[i].graphic);
         };
         RouteTask = new RouteTask({
           url: routeURL + responseToken
@@ -159,10 +166,27 @@ require([
 
             current_route = routeResult;
           })
+        directionsFeatureLayer.applyEdits({
+          addFeatures : directionsArray
+        })
+        .then(() => {
+          console.log("Save Stops ok "); 
+        })
+        .catch(err => {
+            console.log("error: "+err);
+            
+        })
       }
     }
-  
+
     function setLayers() {
+      setGraphicLayers();
+      setFeatureLayers();
+    }
+
+
+    
+    function setGraphicLayers() {
       pointsLayer = new GraphicsLayer({
         title: "Directions",
         id: "pointsLayer"
@@ -180,6 +204,19 @@ require([
         id: "countiesLayer"
       });
       map.layers.add(countiesLayer);
+    }
+
+    function setFeatureLayers() {
+      directionsFeatureLayer = new FeatureLayer({
+        url: "http://sampleserver5.arcgisonline.com/arcgis/rest/services/LocalGovernment/Events/FeatureServer/0",
+        //outFields: ["*"],
+        //visible: false,
+        spatialReference: { wkid: 102100 }
+      });
+      map.layers.add(directionsFeatureLayer);
+    }
+
+    function saveDirection() {
 
     }
   });
