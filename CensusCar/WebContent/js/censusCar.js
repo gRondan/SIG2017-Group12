@@ -8,19 +8,34 @@ var tokenURL = "https://www.arcgis.com/sharing/oauth2/token?client_id=" + client
 var responseToken
 var url
 var routeURL = "https://route.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World?token="
+var directionsFeatureLayerURL = "http://sampleserver5.arcgisonline.com/arcgis/rest/services/LocalGovernment/Events/FeatureServer/0"
+var routesFeatureLayerURL = "http://sampleserver5.arcgisonline.com/arcgis/rest/services/LocalGovernment/Recreation/FeatureServer/1"
 var points = []
 var directionsArray = []
+<<<<<<< HEAD
 var simulating = false;
 var current_route = null;
+=======
+var current_route
+>>>>>>> 2540631ede18ea62ccbac4161831a49810800f7a
 //LAYERS
 var pointsLayer
 var routesLayer
 var countiesLayer
 var carLayer
-//Estilo de la ruta
 var directionsFeatureLayer
+var routesFeatureLayer
+//QUERY
+var directionsQueryTask
+var directionsQuery
+var routeQueryTask
+var routeQuery
 
-var routeGraphic = {
+
+//Estilo de la ruta
+
+
+var routeStyle = {
   type: "simple-line",
   color: "grey",
   width: 4,
@@ -46,8 +61,8 @@ var bufferGraphic = {
   type: "simple-fill",
   color: [140, 140, 222, 0.5],
   outline: {
-      color: [0, 0, 0, 0.5],
-      width: 2
+    color: [0, 0, 0, 0.5],
+    width: 2
   }
 };
 //Estilo del poligono de los condados
@@ -56,6 +71,8 @@ var countyGraphic = {
   color: [247, 153, 71, 0.3],
   width: 3
 };
+
+
 
 require([
   "esri/Map",
@@ -74,10 +91,21 @@ require([
   "esri/tasks/support/DensifyParameters",
   "esri/geometry/geometryEngine",
   "esri/tasks/support/FeatureSet",
+<<<<<<< HEAD
   "esri/layers/FeatureLayer",],
   function (Map, MapView, Tiled, Graphic, GraphicsLayer, Search, Locator, dom, on, domReady, RouteTask, RouteParameters, GeometryService, DensifyParameters, geometryEngine, FeatureSet,FeatureLayer) {
+=======
+  "esri/layers/FeatureLayer",
+  "esri/tasks/QueryTask", "esri/tasks/support/Query"],
+  function (Map, MapView, Tiled, Graphic, GraphicsLayer, Search, Locator, dom, on, domReady, RouteTask, RouteParameters, FeatureSet, FeatureLayer, QueryTask, Query) {
+>>>>>>> 2540631ede18ea62ccbac4161831a49810800f7a
 
     getToken();
+    prepareQueries();
+
+
+
+
 
     //Capa Tiled pedida en letra de obligatorio
     tiled = new Tiled(mapURL);
@@ -162,8 +190,9 @@ require([
     }
 
     // Crea el marcador del móvil
-    function createCarGraphyc(lng, lat){
+    function createCarGraphyc(lng, lat) {
       return new Graphic({
+<<<<<<< HEAD
               geometry: {
                   type: "point",
                   x: lng,//longitude: lng,
@@ -172,11 +201,22 @@ require([
               },
               symbol: carGraphic
           });
+=======
+        geometry: {
+          type: "point",
+          x: lng,
+          y: lat,
+          spatialReference: { wkid: 102100 }
+        },
+        symbol: carGraphic
+      });
+>>>>>>> 2540631ede18ea62ccbac4161831a49810800f7a
     }
 
     window.onload = function calculateRoute() {
       document.getElementById("findRoute").onclick = function findRoute() {
-        if (points.length >= 2){
+        if (points.length >= 2) {
+
           RouteParameters = new RouteParameters({
             stops: new FeatureSet(),
             outSpatialReference: { wkid: 102100 }
@@ -191,25 +231,78 @@ require([
           var RouteResoults = RouteTask.solve(RouteParameters)
             .then((data) => {
               var routeResult = data.routeResults[0].route;
-              routeResult.symbol = routeGraphic;
+              routeResult.symbol = routeStyle;
+              console.log("entra then");
               routesLayer.removeAll();
               routesLayer.add(routeResult);
 
               current_route = routeResult;
+              console.log(current_route);
+
+              var routeGraphic = new Graphic();
+              routeGraphic.geometry = current_route.geometry;
+              routeGraphic.attributes = {
+                name: "routeGraphic",
+                trailtype: 4
+              };
+              routesFeatureLayer.applyEdits({
+                addFeatures: [routeGraphic]
+              }).then(() => {
+                console.log("Save routes ok ");
+                routeQueryTask.execute(routeQuery).then(function (results) {
+                  console.log("routeQueryTask execute ok");
+                  console.log(results.features);
+                })
+                  .catch(err => {
+                    console.log("error query: " + err);
+                  });
+              })
+                .catch(err => {
+                  console.log("error: " + err);
+
+                });
+
+            }).catch(err => {
+              console.log("error: " + err);
+
+
+
             })
+<<<<<<< HEAD
           var car = createCarGraphyc(points[0].geometry.x, points[0].geometry.y);
+=======
+          var car = new Graphic({
+            geometry: {
+              type: "point",
+              longitude: points[0].geometry.longitude,
+              latitude: points[0].geometry.latitude,
+              spatialReference: { wkid: 102100 }
+            },
+            symbol: carGraphic
+          });
+          //createCarGraphyc(points[0].geometry.longitude, points[0].geometry.latitude);
+>>>>>>> 2540631ede18ea62ccbac4161831a49810800f7a
           carLayer.add(car);
           directionsFeatureLayer.applyEdits({
-            addFeatures : directionsArray
+            addFeatures: directionsArray
           })
-          .then(() => {
-            console.log("Save Stops ok "); 
+            .then(() => {
+              console.log("Save Stops ok ");
+            })
+            .catch(err => {
+              console.log("error: " + err);
+
+            })
+          directionsQueryTask.execute(directionsQuery).then(function (results) {
+            console.log("directionsQueryTask execute ok");
+            console.log(results.features);
           })
-          .catch(err => {
-              console.log("error: "+err);
-              
-          })
+            .catch(err => {
+              console.log("error query: " + err);
+            });
+
         }
+<<<<<<< HEAD
       };
       document.getElementById("playSimulation").onclick = function startSimulation(){
         if(current_route){
@@ -245,6 +338,10 @@ require([
             //showToast("Primero debe indicarse una ruta.", "error");
             return;
         }
+=======
+
+
+>>>>>>> 2540631ede18ea62ccbac4161831a49810800f7a
       }
     }
 
@@ -254,7 +351,7 @@ require([
     }
 
 
-    
+
     function setGraphicLayers() {
       pointsLayer = new GraphicsLayer({
         title: "Directions",
@@ -277,10 +374,21 @@ require([
 
     function setFeatureLayers() {
       directionsFeatureLayer = new FeatureLayer({
+<<<<<<< HEAD
         url: "http://sampleserver5.arcgisonline.com/arcgis/rest/services/LocalGovernment/Events/FeatureServer/0",
+=======
+        url: directionsFeatureLayerURL,
+        //outFields: ["*"],
+        //visible: false,
+>>>>>>> 2540631ede18ea62ccbac4161831a49810800f7a
         spatialReference: { wkid: 102100 }
       });
       map.layers.add(directionsFeatureLayer);
+
+      routesFeatureLayer = new FeatureLayer({
+        url: routesFeatureLayerURL
+      });
+      map.layers.add(routesFeatureLayer);
     }
 
     function saveDirection() {
@@ -290,6 +398,7 @@ require([
 
     }
 
+<<<<<<< HEAD
     //SIMULACION
     // Comienza la simulación
     /*window.onload = function playRoute() {
@@ -534,5 +643,23 @@ require([
       });
     }
     
+=======
+    function prepareQueries() {
+      directionsQueryTask = new QueryTask({
+        url: directionsFeatureLayerURL
+      });
+      directionsQuery = new Query();
+      directionsQuery.returnGeometry = true;
+      directionsQuery.outFields = ["*"];
+      directionsQuery.where = "event_type = '17'";
+>>>>>>> 2540631ede18ea62ccbac4161831a49810800f7a
 
+      routeQueryTask = new QueryTask({
+        url: routesFeatureLayerURL
+      });
+      routeQuery = new Query();
+      routeQuery.returnGeometry = true;
+      routeQuery.outFields = ["*"];
+      routeQuery.where = `name = 'routeGraphic'`;
+    }
   });
