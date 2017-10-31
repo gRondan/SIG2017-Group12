@@ -5,15 +5,20 @@ var mapURL = "http://services.arcgisonline.com/ArcGIS/rest/services/World_Street
 var clientId = "56pgncO7oT1NYKoY"
 var clientSecret = "65dd33cc13224721b1849d2e8c32381a"
 var tokenURL = "https://www.arcgis.com/sharing/oauth2/token?client_id=" + clientId + "&grant_type=client_credentials&client_secret=" + clientSecret + "&f=pjson"
-var responseToken
+var responseToken 
 var url
 var routeURL = "https://route.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World?token="
 var directionsFeatureLayerURL = "http://sampleserver5.arcgisonline.com/arcgis/rest/services/LocalGovernment/Events/FeatureServer/0"
 var routesFeatureLayerURL = "http://sampleserver5.arcgisonline.com/arcgis/rest/services/LocalGovernment/Recreation/FeatureServer/1"
+var directionURL = 'http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?singleLine='
 var points = []
 var directionsArray = []
 var simulating = false;
 var current_route = null;
+var addressResult
+var xDirection
+var yDirection
+var selectedDirection = '380 New York St, Redlands, California, 92373'
 //LAYERS
 var pointsLayer
 var routesLayer
@@ -89,10 +94,11 @@ require([
   "esri/tasks/support/FeatureSet",
   "esri/layers/FeatureLayer",
   "esri/tasks/QueryTask", "esri/tasks/support/Query"],
-  function (Map, MapView, Tiled, Graphic, GraphicsLayer, Search, Locator, dom, on, domReady, RouteTask, RouteParameters, GeometryService, DensifyParameters, geometryEngine, FeatureSet,FeatureLayer, QueryTask, Query) {
+  function (Map, MapView, Tiled, Graphic, GraphicsLayer, Search, Locator, dom, on, domReady, RouteTask, RouteParameters, GeometryService, DensifyParameters, geometryEngine, FeatureSet, FeatureLayer, QueryTask, Query) {
 
     getToken();
     prepareQueries();
+    findAddress();
 
 
 
@@ -109,7 +115,7 @@ require([
     setLayers();
 
     // Se define el servicio para operaciones espaciales
-    var geometrySvc = new GeometryService({url: "https://sampleserver6.arcgisonline.com/arcgis/rest/services/Utilities/Geometry/GeometryServer"});
+    var geometrySvc = new GeometryService({ url: "https://sampleserver6.arcgisonline.com/arcgis/rest/services/Utilities/Geometry/GeometryServer" });
 
     mapView = new MapView({
       container: "map",
@@ -183,14 +189,14 @@ require([
     // Crea el marcador del móvil
     function createCarGraphyc(lng, lat) {
       return new Graphic({
-              geometry: {
-                  type: "point",
-                  x: lng,//longitude: lng,
-                  y: lat,//latitude: lat,
-                  spatialReference: { wkid: 102100 }
-              },
-              symbol: carGraphic
-          });
+        geometry: {
+          type: "point",
+          x: lng,//longitude: lng,
+          y: lat,//latitude: lat,
+          spatialReference: { wkid: 102100 }
+        },
+        symbol: carGraphic
+      });
     }
 
     window.onload = function calculateRoute() {
@@ -270,39 +276,39 @@ require([
 
         }
       };
-      document.getElementById("playSimulation").onclick = function startSimulation(){
-        if(current_route){
-            if(simulating){
-                //showToast("Hay una simulación en curso.", "error");
-                return;
-            }
-            simulating = true;
-            //velocityLyr.removeAll();
-            //chgSimBtn();
-            
-            var simulation = {
-                iteration: 0,
-                buffer_size: 1, //getBufferSize(),
-                segment_length: 500, // 100m
-                step: 5, //getSimStep(),
-                travelled_length: 0, // km
-                last_exec_time: 0,
-                coordinates: null
-            }
-
-            // Se obtiene la ruta como una serie de puntos equidistantes
-            // Se utiliza Geometry Engine o Service dependiendo del modo
-            getDensify(simulation).then(path => {
-                simulation.coordinates = path;
-                simulation.last_exec_time = performance.now();
-                
-                //disableSimButtons();
-                //showToast("Simulación iniciada", "info");
-                updateSimulation(simulation);
-            });
-        }else{
-            //showToast("Primero debe indicarse una ruta.", "error");
+      document.getElementById("playSimulation").onclick = function startSimulation() {
+        if (current_route) {
+          if (simulating) {
+            //showToast("Hay una simulación en curso.", "error");
             return;
+          }
+          simulating = true;
+          //velocityLyr.removeAll();
+          //chgSimBtn();
+
+          var simulation = {
+            iteration: 0,
+            buffer_size: 1, //getBufferSize(),
+            segment_length: 500, // 100m
+            step: 5, //getSimStep(),
+            travelled_length: 0, // km
+            last_exec_time: 0,
+            coordinates: null
+          }
+
+          // Se obtiene la ruta como una serie de puntos equidistantes
+          // Se utiliza Geometry Engine o Service dependiendo del modo
+          getDensify(simulation).then(path => {
+            simulation.coordinates = path;
+            simulation.last_exec_time = performance.now();
+
+            //disableSimButtons();
+            //showToast("Simulación iniciada", "info");
+            updateSimulation(simulation);
+          });
+        } else {
+          //showToast("Primero debe indicarse una ruta.", "error");
+          return;
         }
       }
     }
@@ -356,218 +362,54 @@ require([
 
     }
 
-    //SIMULACION
-    // Comienza la simulación
-    /*window.onload = function playRoute() {
-      document.getElementById("playSimulation").onclick = function startSimulation(){
-        if(current_route){
-            if(simulating){
-                //showToast("Hay una simulación en curso.", "error");
-                return;
-            }
-            simulating = true;
-            //velocityLyr.removeAll();
-            //chgSimBtn();
-            
-            var simulation = {
-                iteration: 0,
-                buffer_size: 1, //getBufferSize(),
-                segment_length: 500, // 100m
-                step: 1, //getSimStep(),
-                travelled_length: 0, // km
-                last_exec_time: 0,
-                coordinates: null
-            }
-
-            // Se obtiene la ruta como una serie de puntos equidistantes
-            // Se utiliza Geometry Engine o Service dependiendo del modo
-            getDensify(simulation).then(path => {
-                simulation.coordinates = path;
-                simulation.last_exec_time = performance.now();
-                
-                //disableSimButtons();
-                //showToast("Simulación iniciada", "info");
-                updateSimulation(simulation);
-            });
-        }else{
-            //showToast("Primero debe indicarse una ruta.", "error");
-            return;
-        }
-      }
-    }*/
 
     // Para la simulación
-    function stopSimulation(){
-      if(simulating){
-          simulating = false;
-          
-          //chgSimBtn();
-          //enableSimButtons();
-          //showToast("Simulación finalizada!", "info");
-      }else{
-          //showToast("No hay una simulación en curso", "error");
-      }
-  }
+    function stopSimulation() {
+      if (simulating) {
+        simulating = false;
 
-    // Actualiza el mapa durante la simulación
-    async function updateSimulation(simulation){
-      if(simulating){
-          // Si ya no tengo mas coordenadas termino
-          if(simulation.iteration >= simulation.coordinates.length){
-              stopSimulation();
-              return;
-          }
-
-          // Si me paso lo seteo en el ultimo
-          if(simulation.iteration + simulation.step >= simulation.coordinates.length){
-             simulation.iteration = simulation.coordinates.length-1; 
-          }
-
-          // Busca la coordenada, crea el marcador.
-          var next_coordinate = simulation.coordinates[simulation.iteration];
-          var new_marker = createCarGraphyc(next_coordinate[0], next_coordinate[1]);
-          carLayer.removeAll();
-          carLayer.add(new_marker);
-          simulation.step = 5; //getSimStep();
-          simulation.buffer_size = 1; //getBufferSize();
-
-          simulation.iteration += simulation.step;
-          simulation.travelled_length += simulation.segment_length * simulation.step;
-          simulation.last_exec_time = performance.now();
-          await sleep(2000);
-          updateSimulation(simulation);
-
-          // Calculo el buffer y lo agrego a la capa con el móvil.
-          /*getBuffer(new_marker, simulation).then(buffer => {
-              if(simulating){
-                  var counties = queryCounty(buffer, simulation);
-                  var states = queryState(buffer, simulation);
-
-                  // Cuando terminen las queries se renderizan
-                  Promise.all([counties, states])
-                  .then(results => {
-                      if(simulating){
-                          var stateGraphics = [];
-                          var countiesGraphics = [];
-                          var content = "";
-                          var counties_promise = Promise.resolve(false);
-
-                          if(results[1]){
-                              content += `
-                                  <b>Estados intersectados: </b><br/>
-                                  <ul>
-                              `;
-                              results[1].forEach(state => {
-                                  stateGraphics.push(state.graphic);
-                                  content += `
-                                      <li>${state.name}, ${state.st_abbrev}</li>
-                                  `;
-                              });
-                              content += `
-                                  </ul>
-                              `;
-                          }
-                          if(results[0]){
-                              content += `
-                                  <b>Condados intersectados: </b><br/>
-                                  <ul>
-                              `;
-                              var population_promises = [];
-                              results[0].forEach(county => {
-                                  countiesGraphics.push(county.graphic);
-                                  population_promises.push(
-                                      getLocalPopulation(buffer, county)
-                                      .then(local_population => {
-                                          var population_percentage = Math.round((local_population / county.total_population) * 100); 
-                                          return {
-                                              local_population: local_population,
-                                              county_population: county.total_population,
-                                              list_item: `<li>${county.name}, ${county.st_abbrev} - ${local_population}/${county.total_population} (%${population_percentage})</li>`
-                                          }
-                                      }
-                                  ));
-                              });
-
-                              counties_promise = Promise.all(population_promises)
-                              .then(counties_info => {
-                                  var total_local_population = 0;
-                                  var total_county_population = 0;
-                                  counties_list = "";
-                                  counties_info.forEach(county_info => {
-                                      total_local_population += county_info.local_population;
-                                      total_county_population += county_info.county_population;
-                                      counties_list += county_info.list_item;
-                                  });
-
-                                  var population_percentage = Math.round((total_local_population / total_county_population) * 100); 
-                                  var travelled_distance = simulation.travelled_length >= 1000 ? 
-                                      (simulation.travelled_length / 1000).toFixed(1) + "km" :
-                                      (simulation.travelled_length) + "m";
-                                  var step_distance = simulation.step * simulation.segment_length >= 1000 ? 
-                                      (simulation.step * simulation.segment_length / 1000).toFixed(1) + "km" : 
-                                      (simulation.step * simulation.segment_length) + "m";
-                                  // var actual_velocity = Math.round((simulation.segment_length / 1000) / ((performance.now() - simulation.last_exec_time) / 3600000));
-                                  content += counties_list;
-                                  content += `
-                                      </ul>
-                                      <b>Población total en el buffer: ${total_local_population} (%${population_percentage})</b>
-                                      <hr/>
-                                      <b>Distancia recorrida: ${travelled_distance}</b><br/>
-                                      <b>Distancia por iteración: ${step_distance}</b>
-                                  `;
-                                  return true;
-                              });
-                          }
-
-                          Promise.all([counties_promise])
-                          .then(results => {
-                              if(simulating){
-                                  if(results[0]){
-                                      // graphics.push(new_marker);
-                                      // graphics.push(buffer);
-
-                                      mobileLyr.removeAll();
-                                      mobileLyr.addMany([new_marker, buffer]);
-
-                                      countiesLyr.removeAll();
-                                      countiesLyr.addMany(countiesGraphics);
-
-                                      statesLyr.removeAll();
-                                      statesLyr.addMany(stateGraphics);
-
-                                      // Actualizo el popup
-                                      view.popup.open({
-                                          title: "Información de la simulación",
-                                          content: content,
-                                          dockEnabled: true,
-                                          dockOptions: {
-                                              breakpoint: false,
-                                              buttonEnabled: false,
-                                              position: "top-right"
-                                          }
-                                      });
-
-                                      updateVelocityLine(simulation);
-                                      simulation.step = getSimStep();
-                                      simulation.buffer_size = getBufferSize();
-
-                                      simulation.iteration += simulation.step;
-                                      simulation.travelled_length += simulation.segment_length * simulation.step;
-                                      simulation.last_exec_time = performance.now();
-                                      updateSimulation(simulation);
-                                  }
-                              }
-                          });
-                      }
-                  });
-              }
-          });*/
+        //chgSimBtn();
+        //enableSimButtons();
+        //showToast("Simulación finalizada!", "info");
+      } else {
+        //showToast("No hay una simulación en curso", "error");
       }
     }
 
-    
+    // Actualiza el mapa durante la simulación
+    async function updateSimulation(simulation) {
+      if (simulating) {
+        // Si ya no tengo mas coordenadas termino
+        if (simulation.iteration >= simulation.coordinates.length) {
+          stopSimulation();
+          return;
+        }
+
+        // Si me paso lo seteo en el ultimo
+        if (simulation.iteration + simulation.step >= simulation.coordinates.length) {
+          simulation.iteration = simulation.coordinates.length - 1;
+        }
+
+        // Busca la coordenada, crea el marcador.
+        var next_coordinate = simulation.coordinates[simulation.iteration];
+        var new_marker = createCarGraphyc(next_coordinate[0], next_coordinate[1]);
+        carLayer.removeAll();
+        carLayer.add(new_marker);
+        simulation.step = 5; //getSimStep();
+        simulation.buffer_size = 1; //getBufferSize();
+
+        simulation.iteration += simulation.step;
+        simulation.travelled_length += simulation.segment_length * simulation.step;
+        simulation.last_exec_time = performance.now();
+        await sleep(2000);
+        updateSimulation(simulation);
+
+      }
+    }
+
+
     // Obtiene la ruta actual como una serie de puntos equidistantes
-    function getDensify(simulation){
+    function getDensify(simulation) {
       var path_promise;
       /*if(mode == "service"){
           var densifyParams = new DensifyParameters({
@@ -586,25 +428,25 @@ require([
               console.log("Densify: ", err);
           });
       } else if(mode == "engine"){*/
-          path_promise = Promise.resolve(
-              geometryEngine.densify(current_route.geometry, simulation.segment_length, "meters").paths[0]
-          );
+      path_promise = Promise.resolve(
+        geometryEngine.densify(current_route.geometry, simulation.segment_length, "meters").paths[0]
+      );
       //}
 
       return Promise.all([path_promise])
-      .then(paths => {
+        .then(paths => {
           return paths[0];
-      })
-      .catch(err => {
-        alert("Error al calcular los puntos de ruta");
-        console.log("Densify: ", err);
-      });
+        })
+        .catch(err => {
+          alert("Error al calcular los puntos de ruta");
+          console.log("Densify: ", err);
+        });
     }
 
     function sleep(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));
     }
-    
+
     function prepareQueries() {
       directionsQueryTask = new QueryTask({
         url: directionsFeatureLayerURL
@@ -621,5 +463,21 @@ require([
       routeQuery.returnGeometry = true;
       routeQuery.outFields = ["*"];
       routeQuery.where = `name = 'routeGraphic'`;
+    }
+    function findAddress() {
+      var xhr = new XMLHttpRequest();
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState == XMLHttpRequest.DONE) {
+          console.log(xhr.responseText);
+          addressResult = xhr.responseText
+          xDirection = JSON.parse(addressResult).candidates[0].location.x
+          yDirection = JSON.parse(addressResult).candidates[0].location.y
+        }
+      }
+      //xhr.open('GET', 'http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?singleLine=380 New York St, Redlands, California, 92373&forStorage=true&token=fkSt5LL7brWOjGXcjDBBrlXiP68Sh1onH7hSyt2IBh1sDXds8zIA9tXQQRsKlTatAx1qGK2w8HKkr6uvAfxHqkr9gKyiwvO6lo_KCUWsNDbqxebdiCVxCC5KZkrv3G3qBy6WajY1dAXP4NhqDnNMnA..&f=pjson', true);
+      directionURL = directionURL + selectedDirection+'&forStorage=true&token='+responseToken+'&f=pjson'
+      console.log(directionURL);
+      xhr.open('GET', directionURL, true);
+      xhr.send(null);
     }
   });
