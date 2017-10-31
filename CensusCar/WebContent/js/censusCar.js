@@ -284,7 +284,7 @@ require([
                 iteration: 0,
                 buffer_size: 1, //getBufferSize(),
                 segment_length: 500, // 100m
-                step: 1, //getSimStep(),
+                step: 5, //getSimStep(),
                 travelled_length: 0, // km
                 last_exec_time: 0,
                 coordinates: null
@@ -410,7 +410,7 @@ require([
   }
 
     // Actualiza el mapa durante la simulación
-    function updateSimulation(simulation){
+    async function updateSimulation(simulation){
       if(simulating){
           // Si ya no tengo mas coordenadas termino
           if(simulation.iteration >= simulation.coordinates.length){
@@ -428,12 +428,13 @@ require([
           var new_marker = createCarGraphyc(next_coordinate[0], next_coordinate[1]);
           carLayer.removeAll();
           carLayer.add(new_marker);
-          simulation.step = 1; //getSimStep();
+          simulation.step = 5; //getSimStep();
           simulation.buffer_size = 1; //getBufferSize();
 
           simulation.iteration += simulation.step;
           simulation.travelled_length += simulation.segment_length * simulation.step;
           simulation.last_exec_time = performance.now();
+          await sleep(2000);
           updateSimulation(simulation);
 
           // Calculo el buffer y lo agrego a la capa con el móvil.
@@ -598,6 +599,10 @@ require([
         alert("Error al calcular los puntos de ruta");
         console.log("Densify: ", err);
       });
+    }
+
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
     }
     
     function prepareQueries() {
