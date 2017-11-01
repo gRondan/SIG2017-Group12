@@ -5,7 +5,7 @@ var mapURL = "http://services.arcgisonline.com/ArcGIS/rest/services/World_Street
 var clientId = "56pgncO7oT1NYKoY"
 var clientSecret = "65dd33cc13224721b1849d2e8c32381a"
 var tokenURL = "https://www.arcgis.com/sharing/oauth2/token?client_id=" + clientId + "&grant_type=client_credentials&client_secret=" + clientSecret + "&f=pjson"
-var responseToken 
+var responseToken
 var url
 var routeURL = "https://route.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World?token="
 var directionsFeatureLayerURL = "http://sampleserver5.arcgisonline.com/arcgis/rest/services/LocalGovernment/Events/FeatureServer/0"
@@ -18,7 +18,6 @@ var current_route = null;
 var addressResult
 var xDirection
 var yDirection
-var selectedDirection = '380 New York St, Redlands, California, 92373'
 //LAYERS
 var pointsLayer
 var routesLayer
@@ -98,11 +97,6 @@ require([
 
     getToken();
     prepareQueries();
-    findAddress();
-
-
-
-
 
     //Capa Tiled pedida en letra de obligatorio
     tiled = new Tiled(mapURL);
@@ -170,6 +164,18 @@ require([
         async: false
       });
     }
+    /*function findAddress() {
+      $.ajax({
+        type: "POST",
+        url: tokenURL,
+        //data: data,
+        success: (response) => {
+          responseToken = response.access_token;
+        },
+        dataType: "json",
+        async: false
+      });
+    }*/
 
     function addPoint(point) {
 
@@ -200,6 +206,50 @@ require([
     }
 
     window.onload = function calculateRoute() {
+      document.getElementById("searchAddress").onclick = function findAddress() {
+        var selectedDirection = document.getElementById("address").value;
+        var directionURLGET = directionURL + selectedDirection + '&forStorage=true&&token=' + responseToken + '&f=pjson'
+        console.log(directionURLGET);
+
+        $.ajax({
+          type: "POST",
+          url: directionURLGET,
+          //data: data,
+          success: (response) => {
+            addressResult = response;
+          },
+          dataType: "json",
+          async: false
+        });
+        if (addressResult.candidates.length > 0) {
+          xDirection = addressResult.candidates[0].location.x
+          yDirection = addressResult.candidates[0].location.y
+          var point = {
+            name: selectedDirection,
+            geometry: {
+              type: "point",
+              latitude: yDirection,
+              longitude: xDirection,
+              spatialReference: { wkid: 102100 }
+            },
+            symbol: pointMarker,
+            graphic: new Graphic({
+              geometry: {
+                type: "point",
+                latitude: yDirection,
+                longitude: xDirection,
+                spatialReference: { wkid: 102100 }
+              },
+              symbol: pointMarker
+            })
+          };
+          addPoint(point);
+        } else {
+          alert("No se ha encontrado la dirección " + selectedDirection);
+        }
+
+
+      };
       document.getElementById("findRoute").onclick = function findRoute() {
         if (points.length >= 2) {
 
@@ -463,21 +513,5 @@ require([
       routeQuery.returnGeometry = true;
       routeQuery.outFields = ["*"];
       routeQuery.where = `name = 'routeGraphic'`;
-    }
-    function findAddress() {
-      var xhr = new XMLHttpRequest();
-      xhr.onreadystatechange = function () {
-        if (xhr.readyState == XMLHttpRequest.DONE) {
-          console.log(xhr.responseText);
-          addressResult = xhr.responseText
-          xDirection = JSON.parse(addressResult).candidates[0].location.x
-          yDirection = JSON.parse(addressResult).candidates[0].location.y
-        }
-      }
-      //xhr.open('GET', 'http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?singleLine=380 New York St, Redlands, California, 92373&forStorage=true&token=fkSt5LL7brWOjGXcjDBBrlXiP68Sh1onH7hSyt2IBh1sDXds8zIA9tXQQRsKlTatAx1qGK2w8HKkr6uvAfxHqkr9gKyiwvO6lo_KCUWsNDbqxebdiCVxCC5KZkrv3G3qBy6WajY1dAXP4NhqDnNMnA..&f=pjson', true);
-      directionURL = directionURL + selectedDirection+'&forStorage=true&token='+responseToken+'&f=pjson'
-      console.log(directionURL);
-      xhr.open('GET', directionURL, true);
-      xhr.send(null);
     }
   });
