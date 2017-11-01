@@ -304,7 +304,7 @@ require([
 
 
             })
-          var car = createCarGraphyc(points[0].geometry.x, points[0].geometry.y);
+          var car = createCarGraphyc(points[0].graphic.geometry.x, points[0].graphic.geometry.y);
           carLayer.add(car);
           directionsFeatureLayer.applyEdits({
             addFeatures: directionsArray
