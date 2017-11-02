@@ -160,7 +160,19 @@ require([
       saveDirection();
 
       // Cambios en View
-      //updateStopsList();
+      updateStopsList(point);
+    }
+
+    function updateStopsList(point) {
+      var li = document.createElement('li');
+      li.id = point.id;
+      li.innerHTML = "<span>" + point.id + ". " + point.name + "</span>";
+      document.getElementById("listaPuntos").appendChild(li);
+
+      //var lista = document.getElementById("listaPtos");
+      //var elemento = document.createElement("div");
+      //elemento.innerHTML = point.name;
+      //lista.appendChild(elemento);
     }
 
     // Crea el marcador del móvil

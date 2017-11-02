@@ -44,10 +44,6 @@ html, body, #map {
     right: 6%;
 }
 
-.clickable {
-	cursor: pointer;
-}
-
 .clickable .glyphicon {
 	background: rgba(0, 0, 0, 0.15);
 	display: inline-block;
@@ -75,4 +71,8 @@ a.clickable {
 
 a.clickable:hover {
 	text-decoration: none;
+}
+
+.list-items {
+	margin-left: 2%;
 }
