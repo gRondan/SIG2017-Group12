@@ -11,6 +11,7 @@ var routeURL = "https://route.arcgis.com/arcgis/rest/services/World/Route/NAServ
 var directionsFeatureLayerURL = "http://sampleserver5.arcgisonline.com/arcgis/rest/services/LocalGovernment/Events/FeatureServer/0"
 var routesFeatureLayerURL = "http://sampleserver5.arcgisonline.com/arcgis/rest/services/LocalGovernment/Recreation/FeatureServer/1"
 var directionURL = 'http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?singleLine='
+var findAddressParameters = '&forStorage=true&maxLocations=1&&token='
 var points = []
 var directionsArray = []
 var simulating = false;
@@ -205,10 +206,10 @@ require([
       });
     }
 
-    window.onload = function calculateRoute() {
+    window.onload = function executeActions() {
       document.getElementById("searchAddress").onclick = function findAddress() {
         var selectedDirection = document.getElementById("address").value;
-        var directionURLGET = directionURL + selectedDirection + '&forStorage=true&&token=' + responseToken + '&f=pjson'
+        var directionURLGET = directionURL + selectedDirection + findAddressParameters + responseToken + '&f=pjson'
         console.log(directionURLGET);
 
         $.ajax({
@@ -244,6 +245,7 @@ require([
             })
           };
           addPoint(point);
+          addAddressToList(point);
         } else {
           alert("No se ha encontrado la dirección " + selectedDirection);
         }
@@ -361,6 +363,9 @@ require([
           return;
         }
       }
+      document.getElementById("findNewRoute").onclick = function findNewRoute() {
+        
+      }
     }
 
     function setLayers() {
@@ -394,13 +399,14 @@ require([
       directionsFeatureLayer = new FeatureLayer({
         url: directionsFeatureLayerURL,
         //outFields: ["*"],
-        //visible: false,
+        visible: false,
         spatialReference: { wkid: 102100 }
       });
       map.layers.add(directionsFeatureLayer);
 
       routesFeatureLayer = new FeatureLayer({
-        url: routesFeatureLayerURL
+        url: routesFeatureLayerURL,
+        visible: false
       });
       map.layers.add(routesFeatureLayer);
     }
@@ -514,4 +520,13 @@ require([
       routeQuery.outFields = ["*"];
       routeQuery.where = `name = 'routeGraphic'`;
     }
+    function addAddressToList(point) {
+
+    }
+
+    function clearAddressList() {
+
+    }
+
+
   });
