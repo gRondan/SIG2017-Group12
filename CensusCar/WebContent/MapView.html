@@ -20,28 +20,53 @@
   <script src="js/jquery-3.2.1.min.js"></script>
 </head>
 
-<body>
-  <div id="dir"></div>
-  <div id="content">
-    <div id="map"></div>
-    <div id="menu">
-      <nav class="navbar navbar-inverse bg-primary">
+    <link rel="stylesheet" href="https://js.arcgis.com/4.5/esri/css/main.css">
+    <link rel="stylesheet" href="css/censusCar.css">
+    <script src="https://js.arcgis.com/4.5/"></script>
+    <script src="js/censusCar.js"></script>
+    <script src="js/jquery-3.2.1.min.js"></script>
+  </head> 
+  <body>
+    <div id="dir"></div>
+    <div id="content">
+        <!-- Lista de Puntos -->
+        <div id="ptosList" class="col-md-4">
+            <div class="panel panel-success listaPuntos">
 
-        <div class="container">
-          <div class="row">
-            <button id="findRoute" class="btn btn-success" type="button">Crear ruta</button>
-            <button id="playSimulation" class="btn btn-success" type="button">Play</button>
-            <div class="input-group stylish-input-group">
-              <input id="address" type="text" class="form-control" placeholder="Search" autofocus>
-              <span class="input-group-addon">
-                <button id="searchAddress" type="submit">
-                  <span class="glyphicon glyphicon-search"></span>
-                </button>
-              </span>
-            </div> 
+              <div class="panel-heading">
+                <h3 class="panel-title" style="font-size: 100%;">Lista de puntos</h3>
+                <span class="pull-right clickable">
+                  <i class="glyphicon glyphicon-minus"></i>
+                </span>
+              </div>
+
+              <div class="panel-body">
+               
+              </div>
+
+            </div>
           </div>
-        </div>
-      </nav>
+      <div id="map"></div>
+      <div id="menu">
+        <nav class="navbar navbar-inverse bg-primary">
+            
+            <div class="container">
+              <div class="row">
+                <button id= "findRoute"class="btn btn-success" type="button">Crear ruta</button>
+                <button id= "playSimulation"class="btn btn-success" type="button">Play</button>
+                <div class="input-group stylish-input-group">
+                    <input id="address" type="text" class="form-control"  placeholder="Search" >
+                    <span class="input-group-addon">
+                        <button id="searchAddress" type="submit">
+                            <span class="glyphicon glyphicon-search"></span>
+                        </button>  
+                    </span>
+                </div>
+                
+              </div>
+            </div>
+        </nav>
+      </div>
     </div>
      
   </div>
