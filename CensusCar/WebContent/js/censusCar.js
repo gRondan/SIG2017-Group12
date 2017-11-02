@@ -168,15 +168,49 @@ require([
     }
 
     function updateStopsList(point) {
-      var li = document.createElement('li');
-      li.id = point.id;
-      li.innerHTML = "<span>" + point.id + ". " + point.name + "</span>";
-      document.getElementById("listaPuntos").appendChild(li);
-
-      //var lista = document.getElementById("listaPtos");
-      //var elemento = document.createElement("div");
-      //elemento.innerHTML = point.name;
-      //lista.appendChild(elemento);
+      document.getElementById("listaPuntos").innerHTML="";
+      var j = 0;
+      while (j < points.length){
+        var div = document.createElement('div');
+        div.setAttribute( 'class', 'list-items' );
+        div.innerHTML = "<span>" + j + ". " + points[j].name + "</span>";
+        var li = document.createElement('li');
+        li.id = point.id;
+        var btnDeletePoint = document.createElement('button');
+        btnDeletePoint.setAttribute( 'class', 'btn btn-primary btn-link' );
+        btnDeletePoint.id = "btn_" + j;
+        btnDeletePoint.setAttribute( 'onclick', "eliminarPto(" + j + ")" );
+        btnDeletePoint.setAttribute( 'style', 'float:right;margin-right:5px');
+        var trash = document.createElement('i');
+        trash.setAttribute( 'class', 'glyphicon glyphicon-trash');
+        btnDeletePoint.appendChild(trash);
+        div.appendChild(btnDeletePoint);
+        if(j > 0){
+          var btnUp = document.createElement('button');
+          btnUp.setAttribute( 'class', 'btn btn-primary btn-link' );
+          btnUp.id = "btnUp_" + j;
+          btnUp.setAttribute( 'onclick', "subirPto(" + j + ")" );
+          btnUp.setAttribute( 'style', 'float:right');
+          var arrowUp = document.createElement('i');
+          arrowUp.setAttribute( 'class', 'glyphicon glyphicon-arrow-up');
+          btnUp.appendChild(arrowUp);
+          div.appendChild(btnUp);
+        }
+        if(j < points.length -1){
+          var btnDown = document.createElement('button');
+          btnDown.setAttribute( 'class', 'btn btn-primary btn-link' );
+          btnDown.id = "btnDown_" + j;
+          btnDown.setAttribute( 'onclick', "bajarPto(" + j + ")" );
+          btnDown.setAttribute( 'style', 'float:right');
+          var arrowDown = document.createElement('i');
+          arrowDown.setAttribute( 'class', 'glyphicon glyphicon-arrow-down');
+          btnDown.appendChild(arrowDown);
+          div.appendChild(btnDown);
+        }
+        li.appendChild(div);
+        document.getElementById("listaPuntos").appendChild(li);
+        j++;
+      }
     }
 
     // Crea el marcador del móvil
