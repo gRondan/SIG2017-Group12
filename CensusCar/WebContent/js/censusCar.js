@@ -274,13 +274,16 @@ require([
       };
       document.getElementById("findRoute").onclick = function findRoute() {
         if (points.length >= 2) {
+         // clearLayers();
           /*
                     RouteParameters = new RouteParameters({
                       stops: new FeatureSet(),
                       outSpatialReference: { wkid: 102100 }
                     })
             */        
-            
+          carLayer.removeAll();
+          routesLayer.removeAll();
+
           for (i = 0; i < points.length; i++) {
             RouteParameters.stops.features.push(points[i].graphic);
             directionsArray.push(points[i].graphic);
@@ -455,7 +458,10 @@ require([
 
     function saveDirection() {
 
-      carLayer = new GraphicsLayer();
+      carLayer = new GraphicsLayer({
+        title: "Car",
+        id: "carLayer"
+      });
       map.layers.add(carLayer);
 
     }
@@ -464,6 +470,7 @@ require([
     // Para la simulación
     function stopSimulation() {
       if (simulating) {
+        carLayer.removeAll();
         simulating = false;
 
         //chgSimBtn();
@@ -584,6 +591,6 @@ require([
       })
     }
 
-
+    
 
   });
