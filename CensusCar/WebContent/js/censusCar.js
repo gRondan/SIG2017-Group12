@@ -120,37 +120,6 @@ require([
       map: map
     });
 
-    //Creación del buscador
-    var searchWidget = new Search({
-      view: mapView,
-      sources: [{
-        locator: new Locator({ url: "//geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer" }),
-        singleLineFieldName: "SingleLine",
-        placeholder: "Find location in USA",
-        countryCode: "US"
-      }]
-    });
-    mapView.ui.add(searchWidget, { position: "top-left", index: 0 });
-
-    //Evento que devuelve la búsqueda realizada
-    searchWidget.on("select-result", (result) => {
-      var point = {
-        name: result.result.name,
-        geometry: result.result.feature.geometry,
-        symbol: pointMarker,
-        graphic: new Graphic({
-          geometry: result.result.feature.geometry,
-          symbol: pointMarker,
-          spatialReference: { wkid: 102100 },
-          attributes: {
-            event_type: "17",
-            description: result.result.name
-          }
-        })
-      };
-      addPoint(point);
-    });
-
     //FUNCIONES AUXILIARES
 
     function getToken() {
