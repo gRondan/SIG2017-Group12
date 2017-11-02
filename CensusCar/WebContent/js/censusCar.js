@@ -107,6 +107,8 @@ require([
       layers: [tiled]
     });
 
+
+    //initializeRouteVariables();
     setLayers();
 
     // Se define el servicio para operaciones espaciales
@@ -254,11 +256,13 @@ require([
       };
       document.getElementById("findRoute").onclick = function findRoute() {
         if (points.length >= 2) {
-
-          RouteParameters = new RouteParameters({
-            stops: new FeatureSet(),
-            outSpatialReference: { wkid: 102100 }
-          })
+          
+                    RouteParameters = new RouteParameters({
+                      stops: new FeatureSet(),
+                      outSpatialReference: { wkid: 102100 }
+                    })
+                    
+            
           for (i = 0; i < points.length; i++) {
             RouteParameters.stops.features.push(points[i].graphic);
             directionsArray.push(points[i].graphic);
@@ -327,6 +331,8 @@ require([
             });
 
         }
+        //points.removeAll();
+        //points.length = 0;
       };
       document.getElementById("playSimulation").onclick = function startSimulation() {
         if (current_route) {
@@ -364,7 +370,7 @@ require([
         }
       }
       document.getElementById("findNewRoute").onclick = function findNewRoute() {
-        
+
       }
     }
 
@@ -526,6 +532,20 @@ require([
 
     function clearAddressList() {
 
+    }
+
+    function initializeRouteVariables() {
+      RouteParameters = new RouteParameters({
+        stops: new FeatureSet(),
+        outSpatialReference: { wkid: 102100 }
+      })
+      /*for (i = 0; i < points.length; i++) {
+        RouteParameters.stops.features.removeAll();
+        directionsArray.removeAll();
+      };*/
+      RouteTask = new RouteTask({
+        url: routeURL + responseToken
+      })
     }
 
 
