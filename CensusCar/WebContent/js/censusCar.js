@@ -81,7 +81,6 @@ require([
   "esri/layers/TileLayer",
   "esri/Graphic",
   "esri/layers/GraphicsLayer",
-  "esri/widgets/Search",
   "esri/tasks/Locator",
   "dojo/dom",
   "dojo/on",
@@ -94,7 +93,7 @@ require([
   "esri/tasks/support/FeatureSet",
   "esri/layers/FeatureLayer",
   "esri/tasks/QueryTask", "esri/tasks/support/Query"],
-  function (Map, MapView, Tiled, Graphic, GraphicsLayer, Search, Locator, dom, on, domReady, RouteTask, RouteParameters, GeometryService, DensifyParameters, geometryEngine, FeatureSet, FeatureLayer, QueryTask, Query) {
+  function (Map, MapView, Tiled, Graphic, GraphicsLayer, Locator, dom, on, domReady, RouteTask, RouteParameters, GeometryService, DensifyParameters, geometryEngine, FeatureSet, FeatureLayer, QueryTask, Query) {
 
     getToken();
     prepareQueries();
