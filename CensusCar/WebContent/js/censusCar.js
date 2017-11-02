@@ -12,9 +12,10 @@ var directionsFeatureLayerURL = "http://sampleserver5.arcgisonline.com/arcgis/re
 var routesFeatureLayerURL = "http://sampleserver5.arcgisonline.com/arcgis/rest/services/LocalGovernment/Recreation/FeatureServer/1"
 var directionURL = 'http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?singleLine='
 var findAddressParameters = '&forStorage=true&maxLocations=1&&token='
+var exportPDFURL = "http://sampleserver5.arcgisonline.com/arcgis/rest/services/Utilities/PrintingTools/GPServer/Export%20Web%20Map%20Task"
+var CountiesLayerURL = "http://services.arcgisonline.com/arcgis/rest/services/Demographics/USA_1990-2000_Population_Change/MapServer/3"
 var points = []
 var directionsArray = []
-var simulating = false;
 var current_route = null;
 var addressResult
 var xDirection
@@ -31,7 +32,9 @@ var directionsQueryTask
 var directionsQuery
 var routeQueryTask
 var routeQuery
-
+var countiesQueryTask
+var countiesQuery
+var GeometryService
 
 //Estilo de la ruta
 
@@ -96,8 +99,8 @@ require([
   "esri/tasks/QueryTask", "esri/tasks/support/Query",
   "esri/tasks/PrintTask",
   "esri/tasks/support/PrintParameters",
-  "esri/tasks/support/PrintTemplate"],
-  function (Map, MapView, Tiled, Graphic, GraphicsLayer, Search, Locator, dom, on, domReady, RouteTask, RouteParameters, GeometryService, DensifyParameters, geometryEngine, FeatureSet, FeatureLayer, QueryTask, Query, PrintTask,PrintParameters, PrintTemplate) {
+  "esri/tasks/support/PrintTemplate",
+  function (Map, MapView, Tiled, Graphic, GraphicsLayer, Search, Locator, dom, on, domReady, RouteTask, RouteParameters, GeometryService, DensifyParameters, geometryEngine, FeatureSet, FeatureLayer, QueryTask, Query, PrintTask, PrintParameters, PrintTemplate) {
 
     getToken();
     prepareQueries();
@@ -240,13 +243,13 @@ require([
       };
       document.getElementById("findRoute").onclick = function findRoute() {
         if (points.length >= 2) {
-         // clearLayers();
+          // clearLayers();
           /*
                     RouteParameters = new RouteParameters({
                       stops: new FeatureSet(),
                       outSpatialReference: { wkid: 102100 }
                     })
-            */        
+            */
           carLayer.removeAll();
           routesLayer.removeAll();
 
@@ -257,9 +260,9 @@ require([
           /*RouteTask = new RouteTask({
             url: routeURL + responseToken
           })*/
-          
-        //points = [];
-        //points.length = 0;
+
+          //points = [];
+          //points.length = 0;
           var RouteResoults = RouteTask.solve(RouteParameters)
             .then((data) => {
               var routeResult = data.routeResults[0].route;
@@ -324,11 +327,6 @@ require([
       };
       document.getElementById("playSimulation").onclick = function startSimulation() {
         if (current_route) {
-          if (simulating) {
-            //showToast("Hay una simulación en curso.", "error");
-            return;
-          }
-          simulating = true;
           //velocityLyr.removeAll();
           //chgSimBtn();
 
@@ -353,13 +351,12 @@ require([
             updateSimulation(simulation);
           });
         } else {
-          //showToast("Primero debe indicarse una ruta.", "error");
           return;
         }
-      }
+      };
       document.getElementById("exportPDF").onclick = function exportPDF() {
         var printTask = new PrintTask({
-          url: "http://sampleserver5.arcgisonline.com/arcgis/rest/services/Utilities/PrintingTools/GPServer/Export%20Web%20Map%20Task"
+          url: exportPDFURL
         });
         var pdfTemplate = new PrintTemplate({
           format: "pdf"
@@ -369,13 +366,13 @@ require([
           template: pdfTemplate
         })
         printTask.execute(printParameters)
-        .then(response => {
-          window.open(response.url, "_blank");
-      })
-      .catch(err => {
-          console.log("Print PDF: ", err);
-          showToast("Hubo un error al crear el PDF", "error");
-      });
+          .then(response => {
+            window.open(response.url, "_blank");
+          })
+          .catch(err => {
+            console.log("Print PDF: ", err);
+            showToast("Hubo un error al crear el PDF", "error");
+          });
       }
     }
 
@@ -398,12 +395,13 @@ require([
         id: "routesLayer"
       });
       map.layers.add(routesLayer);
-
-      countiesLayer = new GraphicsLayer({
-        title: "Counties",
-        id: "countiesLayer"
-      });
-      map.layers.add(countiesLayer);
+      /*
+            countiesLayer = new GraphicsLayer({
+              title: "Counties",
+              id: "countiesLayer"
+            });
+      
+            map.layers.add(countiesLayer);*/
     }
 
     function setFeatureLayers() {
@@ -420,6 +418,13 @@ require([
         visible: false
       });
       map.layers.add(routesFeatureLayer);
+
+      /* countiesLayer = new FeatureLayer({
+         url: CountiesLayerURL,
+         visible: true
+       });
+ 
+       map.layers.add(countiesLayer);*/
     }
 
     function saveDirection() {
@@ -432,57 +437,41 @@ require([
 
     }
 
-
-    // Para la simulación
-    function stopSimulation() {
-      if (simulating) {
-        carLayer.removeAll();
-        simulating = false;
-
-        //chgSimBtn();
-        //enableSimButtons();
-        //showToast("Simulación finalizada!", "info");
-      } else {
-        //showToast("No hay una simulación en curso", "error");
-      }
-    }
-
     // Actualiza el mapa durante la simulación
     async function updateSimulation(simulation) {
-      if (simulating) {
-        // Si ya no tengo mas coordenadas termino
-        if (simulation.iteration >= simulation.coordinates.length) {
-          stopSimulation();
-          return;
-        }
-
-        // Si me paso lo seteo en el ultimo
-        if (simulation.iteration + simulation.step >= simulation.coordinates.length) {
-          simulation.iteration = simulation.coordinates.length - 1;
-        }
-
-        // Busca la coordenada, crea el marcador.
-        var next_coordinate = simulation.coordinates[simulation.iteration];
-        var new_marker = createCarGraphyc(next_coordinate[0], next_coordinate[1]);
+      // Si ya no tengo mas coordenadas termino
+      if (simulation.iteration >= simulation.coordinates.length) {
         carLayer.removeAll();
-        carLayer.add(new_marker);
-        simulation.step = 5; //getSimStep();
-        simulation.buffer_size = 1; //getBufferSize();
-
-        simulation.iteration += simulation.step;
-        simulation.travelled_length += simulation.segment_length * simulation.step;
-        simulation.last_exec_time = performance.now();
-        await sleep(2000);
-        updateSimulation(simulation);
-
+        return;
       }
+
+      // Si me paso lo seteo en el ultimo
+      if (simulation.iteration + simulation.step >= simulation.coordinates.length) {
+        simulation.iteration = simulation.coordinates.length - 1;
+      }
+
+      // Busca la coordenada, crea el marcador.
+      var next_coordinate = simulation.coordinates[simulation.iteration];
+      var new_marker = createCarGraphyc(next_coordinate[0], next_coordinate[1]);
+      carLayer.removeAll();
+      carLayer.add(new_marker);
+      simulation.step = 5; //getSimStep();
+      simulation.buffer_size = 1; //getBufferSize();
+
+      simulation.iteration += simulation.step;
+      simulation.travelled_length += simulation.segment_length * simulation.step;
+      simulation.last_exec_time = performance.now();
+      await sleep(2000);
+      updateSimulation(simulation);
+
+
     }
 
 
     // Obtiene la ruta actual como una serie de puntos equidistantes
     function getDensify(simulation) {
-      var path_promise; 
-      /*if(mode == "service"){
+      /*var path_promise;
+      
           var densifyParams = new DensifyParameters({
               geometries: [current_route.geometry],
               lengthUnit: "meters",
@@ -498,11 +487,6 @@ require([
               alert("Error al calcular los puntos de ruta");
               console.log("Densify: ", err);
           });
-      } else if(mode == "engine"){*/
-      path_promise = Promise.resolve(
-        geometryEngine.densify(current_route.geometry, simulation.segment_length, "meters").paths[0]
-      );
-      //}
 
       return Promise.all([path_promise])
         .then(paths => {
@@ -511,7 +495,7 @@ require([
         .catch(err => {
           alert("Error al calcular los puntos de ruta");
           console.log("Densify: ", err);
-        });
+        });*/
     }
 
     function sleep(ms) {
@@ -534,20 +518,21 @@ require([
       routeQuery.returnGeometry = true;
       routeQuery.outFields = ["*"];
       routeQuery.where = `name = 'routeGraphic'`;
-    }
-    function addAddressToList(point) {
 
-    }
-
-    function clearAddressList() {
-
+      countiesQueryTask = new QueryTask({
+        url: CountiesLayerURL
+      });
+      countiesQuery = new Query();
+      countiesQuery.returnGeometry = true;
+      countiesQuery.outFields = ["*"];
+      countiesQuery.geometry = "intersects";
     }
 
     function initializeRouteVariables() {
       RouteParameters = new RouteParameters({
         stops: new FeatureSet(),
         outSpatialReference: { wkid: 102100 }
-      })
+      });
       /*for (i = 0; i < points.length; i++) {
         RouteParameters.stops.features.removeAll();
         directionsArray.removeAll();
@@ -557,6 +542,6 @@ require([
       })
     }
 
-    
+
 
   });
