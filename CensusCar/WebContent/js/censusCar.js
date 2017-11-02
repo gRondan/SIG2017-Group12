@@ -212,7 +212,7 @@ require([
           xDirection = addressResult.candidates[0].location.x
           yDirection = addressResult.candidates[0].location.y
           var point = {
-            name: selectedDirection,
+            name: addressResult.candidates[0].address,
             geometry: {
               type: "point",
               latitude: yDirection,
