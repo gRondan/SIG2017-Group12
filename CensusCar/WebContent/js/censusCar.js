@@ -81,6 +81,7 @@ require([
   "esri/layers/TileLayer",
   "esri/Graphic",
   "esri/layers/GraphicsLayer",
+  "esri/widgets/Search",
   "esri/tasks/Locator",
   "dojo/dom",
   "dojo/on",
@@ -92,8 +93,11 @@ require([
   "esri/geometry/geometryEngine",
   "esri/tasks/support/FeatureSet",
   "esri/layers/FeatureLayer",
-  "esri/tasks/QueryTask", "esri/tasks/support/Query"],
-  function (Map, MapView, Tiled, Graphic, GraphicsLayer, Locator, dom, on, domReady, RouteTask, RouteParameters, GeometryService, DensifyParameters, geometryEngine, FeatureSet, FeatureLayer, QueryTask, Query) {
+  "esri/tasks/QueryTask", "esri/tasks/support/Query",
+  "esri/tasks/PrintTask",
+  "esri/tasks/support/PrintParameters",
+  "esri/tasks/support/PrintTemplate"],
+  function (Map, MapView, Tiled, Graphic, GraphicsLayer, Search, Locator, dom, on, domReady, RouteTask, RouteParameters, GeometryService, DensifyParameters, geometryEngine, FeatureSet, FeatureLayer, QueryTask, Query, PrintTask,PrintParameters, PrintTemplate) {
 
     getToken();
     prepareQueries();
@@ -107,7 +111,7 @@ require([
     });
 
 
-    //initializeRouteVariables();
+    initializeRouteVariables();
     setLayers();
 
     // Se define el servicio para operaciones espaciales
@@ -236,20 +240,23 @@ require([
       };
       document.getElementById("findRoute").onclick = function findRoute() {
         if (points.length >= 2) {
-          
+          /*
                     RouteParameters = new RouteParameters({
                       stops: new FeatureSet(),
                       outSpatialReference: { wkid: 102100 }
                     })
-                    
+            */        
             
           for (i = 0; i < points.length; i++) {
             RouteParameters.stops.features.push(points[i].graphic);
             directionsArray.push(points[i].graphic);
           };
-          RouteTask = new RouteTask({
+          /*RouteTask = new RouteTask({
             url: routeURL + responseToken
-          })
+          })*/
+          
+        //points = [];
+        //points.length = 0;
           var RouteResoults = RouteTask.solve(RouteParameters)
             .then((data) => {
               var routeResult = data.routeResults[0].route;
@@ -311,8 +318,6 @@ require([
             });
 
         }
-        //points.removeAll();
-        //points.length = 0;
       };
       document.getElementById("playSimulation").onclick = function startSimulation() {
         if (current_route) {
@@ -349,8 +354,25 @@ require([
           return;
         }
       }
-      document.getElementById("findNewRoute").onclick = function findNewRoute() {
-
+      document.getElementById("exportPDF").onclick = function exportPDF() {
+        var printTask = new PrintTask({
+          url: "http://sampleserver5.arcgisonline.com/arcgis/rest/services/Utilities/PrintingTools/GPServer/Export%20Web%20Map%20Task"
+        });
+        var pdfTemplate = new PrintTemplate({
+          format: "pdf"
+        })
+        var printParameters = new PrintParameters({
+          view: mapView,
+          template: pdfTemplate
+        })
+        printTask.execute(printParameters)
+        .then(response => {
+          window.open(response.url, "_blank");
+      })
+      .catch(err => {
+          console.log("Print PDF: ", err);
+          showToast("Hubo un error al crear el PDF", "error");
+      });
       }
     }
 
@@ -452,7 +474,7 @@ require([
 
     // Obtiene la ruta actual como una serie de puntos equidistantes
     function getDensify(simulation) {
-      var path_promise;
+      var path_promise; 
       /*if(mode == "service"){
           var densifyParams = new DensifyParameters({
               geometries: [current_route.geometry],
@@ -527,6 +549,7 @@ require([
         url: routeURL + responseToken
       })
     }
+
 
 
   });
