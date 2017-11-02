@@ -34,3 +34,12 @@ html, body, #map {
     border:0;
     background:transparent;
 }
+
+.listaPuntos{
+    display: block;
+    position: absolute;
+		min-width: 100%;
+    z-index: 2;
+    top: 30px;
+    left: 6%;
+}
