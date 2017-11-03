@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="css/censusCar.css">
     <script src="https://js.arcgis.com/4.5/"></script>
     <script src="js/censusCar.js"></script>
+    <script src="js/FuncionesAuxiliares.js"></script>
     <script src="js/jquery-3.2.1.min.js"></script>
   </head>
   
@@ -49,9 +50,9 @@
             
             <div class="container">
               <div class="row">
-                <button id= "findRoute"class="btn btn-success" type="button">Crear ruta</button>
-                <button id= "playSimulation"class="btn btn-success" type="button">Play</button>
-                <button id= "exportPDF"class="btn btn-success" type="button">Export PDF</button>
+                <button id= "findRoute"class="btn btn-success" type="button">Crear ruta <i class="glyphicon glyphicon-road"></i></button>
+                <button id= "playSimulation"class="btn btn-success" style="border-radius: 50%;" type="button"><i class="glyphicon glyphicon-play"></i></button>
+                <button id= "exportPDF"class="btn btn-success" type="button">Export PDF <i class="glyphicon glyphicon-file"></i></button>
                 <div class="input-group stylish-input-group">
                     <input id="address" type="text" class="form-control"  placeholder="Search" autofocus>
                     <span class="input-group-addon">
