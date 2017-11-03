@@ -14,8 +14,11 @@ var directionURL = 'http://geocode.arcgis.com/arcgis/rest/services/World/Geocode
 var findAddressParameters = '&forStorage=true&maxLocations=1&&token='
 var exportPDFURL = "http://sampleserver5.arcgisonline.com/arcgis/rest/services/Utilities/PrintingTools/GPServer/Export%20Web%20Map%20Task"
 var CountiesLayerURL = "http://services.arcgisonline.com/arcgis/rest/services/Demographics/USA_1990-2000_Population_Change/MapServer/3"
+var geometryService
+var geometryServiceURL = "https://sampleserver6.arcgisonline.com/arcgis/rest/services/Utilities/Geometry/GeometryServer"
 var points = []
 var directionsArray = []
+var simulating = false;
 var current_route = null;
 var addressResult
 var xDirection
@@ -27,6 +30,7 @@ var countiesLayer
 var carLayer
 var directionsFeatureLayer
 var routesFeatureLayer
+var visibilityLayer
 //QUERY
 var directionsQueryTask
 var directionsQuery
@@ -34,7 +38,6 @@ var routeQueryTask
 var routeQuery
 var countiesQueryTask
 var countiesQuery
-var GeometryService
 
 //Estilo de la ruta
 
@@ -61,7 +64,7 @@ var carGraphic = {
   height: "50px"
 };
 //Estilo del buffer del vehiculo
-var bufferGraphic = {
+var visibilitySymbol = {
   type: "simple-fill",
   color: [140, 140, 222, 0.5],
   outline: {
@@ -99,7 +102,7 @@ require([
   "esri/tasks/QueryTask", "esri/tasks/support/Query",
   "esri/tasks/PrintTask",
   "esri/tasks/support/PrintParameters",
-  "esri/tasks/support/PrintTemplate",
+  "esri/tasks/support/PrintTemplate"],
   function (Map, MapView, Tiled, Graphic, GraphicsLayer, Search, Locator, dom, on, domReady, RouteTask, RouteParameters, GeometryService, DensifyParameters, geometryEngine, FeatureSet, FeatureLayer, QueryTask, Query, PrintTask, PrintParameters, PrintTemplate) {
 
     getToken();
@@ -118,7 +121,9 @@ require([
     setLayers();
 
     // Se define el servicio para operaciones espaciales
-    var geometrySvc = new GeometryService({ url: "https://sampleserver6.arcgisonline.com/arcgis/rest/services/Utilities/Geometry/GeometryServer" });
+    geometryService = new GeometryService({
+      url: geometryServiceURL
+    });
 
     mapView = new MapView({
       container: "map",
@@ -171,42 +176,42 @@ require([
     }
 
     function updateStopsList(point) {
-      document.getElementById("listaPuntos").innerHTML="";
+      document.getElementById("listaPuntos").innerHTML = "";
       var j = 0;
-      while (j < points.length){
+      while (j < points.length) {
         var div = document.createElement('div');
-        div.setAttribute( 'class', 'list-items' );
+        div.setAttribute('class', 'list-items');
         div.innerHTML = "<span>" + j + ". " + points[j].name + "</span>";
         var li = document.createElement('li');
         li.id = point.id;
         var btnDeletePoint = document.createElement('button');
-        btnDeletePoint.setAttribute( 'class', 'btn btn-primary btn-link' );
+        btnDeletePoint.setAttribute('class', 'btn btn-primary btn-link');
         btnDeletePoint.id = "btn_" + j;
-        btnDeletePoint.setAttribute( 'onclick', "eliminarPto(" + j + ")" );
-        btnDeletePoint.setAttribute( 'style', 'float:right;margin-right:5px');
+        btnDeletePoint.setAttribute('onclick', "eliminarPto(" + j + ")");
+        btnDeletePoint.setAttribute('style', 'float:right;margin-right:5px');
         var trash = document.createElement('i');
-        trash.setAttribute( 'class', 'glyphicon glyphicon-trash');
+        trash.setAttribute('class', 'glyphicon glyphicon-trash');
         btnDeletePoint.appendChild(trash);
         div.appendChild(btnDeletePoint);
-        if(j > 0){
+        if (j > 0) {
           var btnUp = document.createElement('button');
-          btnUp.setAttribute( 'class', 'btn btn-primary btn-link' );
+          btnUp.setAttribute('class', 'btn btn-primary btn-link');
           btnUp.id = "btnUp_" + j;
-          btnUp.setAttribute( 'onclick', "subirPto(" + j + ")" );
-          btnUp.setAttribute( 'style', 'float:right');
+          btnUp.setAttribute('onclick', "subirPto(" + j + ")");
+          btnUp.setAttribute('style', 'float:right');
           var arrowUp = document.createElement('i');
-          arrowUp.setAttribute( 'class', 'glyphicon glyphicon-arrow-up');
+          arrowUp.setAttribute('class', 'glyphicon glyphicon-arrow-up');
           btnUp.appendChild(arrowUp);
           div.appendChild(btnUp);
         }
-        if(j < points.length -1){
+        if (j < points.length - 1) {
           var btnDown = document.createElement('button');
-          btnDown.setAttribute( 'class', 'btn btn-primary btn-link' );
+          btnDown.setAttribute('class', 'btn btn-primary btn-link');
           btnDown.id = "btnDown_" + j;
-          btnDown.setAttribute( 'onclick', "bajarPto(" + j + ")" );
-          btnDown.setAttribute( 'style', 'float:right');
+          btnDown.setAttribute('onclick', "bajarPto(" + j + ")");
+          btnDown.setAttribute('style', 'float:right');
           var arrowDown = document.createElement('i');
-          arrowDown.setAttribute( 'class', 'glyphicon glyphicon-arrow-down');
+          arrowDown.setAttribute('class', 'glyphicon glyphicon-arrow-down');
           btnDown.appendChild(arrowDown);
           div.appendChild(btnDown);
         }
@@ -226,6 +231,18 @@ require([
           spatialReference: { wkid: 102100 }
         },
         symbol: carGraphic
+      });
+    }
+
+    function createVisibilityGraphyc(lng, lat) {
+      return new Graphic({
+        geometry: {
+          type: "polygon",
+          x: lng,//longitude: lng,
+          y: lat,//latitude: lat,
+          spatialReference: { wkid: 102100 }
+        },
+        symbol: visibilitySymbol
       });
     }
 
@@ -361,6 +378,11 @@ require([
       };
       document.getElementById("playSimulation").onclick = function startSimulation() {
         if (current_route) {
+          if (simulating) {
+            //showToast("Hay una simulación en curso.", "error");
+            return;
+          }
+          simulating = true;
           //velocityLyr.removeAll();
           //chgSimBtn();
 
@@ -385,9 +407,10 @@ require([
             updateSimulation(simulation);
           });
         } else {
+          //showToast("Primero debe indicarse una ruta.", "error");
           return;
         }
-      };
+      }
       document.getElementById("exportPDF").onclick = function exportPDF() {
         var printTask = new PrintTask({
           url: exportPDFURL
@@ -429,13 +452,18 @@ require([
         id: "routesLayer"
       });
       map.layers.add(routesLayer);
-      /*
-            countiesLayer = new GraphicsLayer({
-              title: "Counties",
-              id: "countiesLayer"
-            });
-      
-            map.layers.add(countiesLayer);*/
+
+      countiesLayer = new GraphicsLayer({
+        title: "Counties",
+        id: "countiesLayer"
+      });
+      map.layers.add(countiesLayer);
+
+      visibilityLayer = new GraphicsLayer({
+        title: "Visibility",
+        id: "visibilityLayer"
+      });
+      map.layers.add(visibilityLayer);
     }
 
     function setFeatureLayers() {
@@ -471,48 +499,66 @@ require([
 
     }
 
+
+    // Para la simulación
+    function stopSimulation() {
+      if (simulating) {
+        carLayer.removeAll();
+        simulating = false;
+
+        //chgSimBtn();
+        //enableSimButtons();
+        //showToast("Simulación finalizada!", "info");
+      } else {
+        //showToast("No hay una simulación en curso", "error");
+      }
+    }
+
     // Actualiza el mapa durante la simulación
     async function updateSimulation(simulation) {
-      // Si ya no tengo mas coordenadas termino
-      if (simulation.iteration >= simulation.coordinates.length) {
+      if (simulating) {
+        // Si ya no tengo mas coordenadas termino
+        if (simulation.iteration >= simulation.coordinates.length) {
+          stopSimulation();
+          return;
+        }
+
+        // Si me paso lo seteo en el ultimo
+        if (simulation.iteration + simulation.step >= simulation.coordinates.length) {
+          simulation.iteration = simulation.coordinates.length - 1;
+        }
+
+        // Busca la coordenada, crea el marcador.
+        var next_coordinate = simulation.coordinates[simulation.iteration];
+        var carGraphic = createCarGraphyc(next_coordinate[0], next_coordinate[1]);
+        var visibilityGraphic = createVisibilityGraphyc(next_coordinate[0], next_coordinate[1]);
         carLayer.removeAll();
-        return;
+        carLayer.add(carGraphic);
+        visibilityLayer.removeAll();
+        visibilityLayer.add(visibilityGraphic);
+        simulation.step = 5; //getSimStep();
+        simulation.buffer_size = 1; //getBufferSize();
+
+        simulation.iteration += simulation.step;
+        simulation.travelled_length += simulation.segment_length * simulation.step;
+        simulation.last_exec_time = performance.now();
+        await sleep(2000);
+        updateSimulation(simulation);
+
       }
-
-      // Si me paso lo seteo en el ultimo
-      if (simulation.iteration + simulation.step >= simulation.coordinates.length) {
-        simulation.iteration = simulation.coordinates.length - 1;
-      }
-
-      // Busca la coordenada, crea el marcador.
-      var next_coordinate = simulation.coordinates[simulation.iteration];
-      var new_marker = createCarGraphyc(next_coordinate[0], next_coordinate[1]);
-      carLayer.removeAll();
-      carLayer.add(new_marker);
-      simulation.step = 5; //getSimStep();
-      simulation.buffer_size = 1; //getBufferSize();
-
-      simulation.iteration += simulation.step;
-      simulation.travelled_length += simulation.segment_length * simulation.step;
-      simulation.last_exec_time = performance.now();
-      await sleep(2000);
-      updateSimulation(simulation);
-
-
     }
 
 
     // Obtiene la ruta actual como una serie de puntos equidistantes
     function getDensify(simulation) {
-      /*var path_promise;
-      
+      var path_promise;
+      /*if(mode == "service"){
           var densifyParams = new DensifyParameters({
               geometries: [current_route.geometry],
               lengthUnit: "meters",
               maxSegmentLength: simulation.segment_length,
               geodesic: true
           });
-
           path_promise = geometrySvc.densify(densifyParams)
           .then(data => {
               return data[0].paths[0];
@@ -521,6 +567,11 @@ require([
               alert("Error al calcular los puntos de ruta");
               console.log("Densify: ", err);
           });
+      } else if(mode == "engine"){*/
+      path_promise = Promise.resolve(
+        geometryEngine.densify(current_route.geometry, simulation.segment_length, "meters").paths[0]
+      );
+      //}
 
       return Promise.all([path_promise])
         .then(paths => {
@@ -529,7 +580,7 @@ require([
         .catch(err => {
           alert("Error al calcular los puntos de ruta");
           console.log("Densify: ", err);
-        });*/
+        });
     }
 
     function sleep(ms) {
@@ -561,12 +612,19 @@ require([
       countiesQuery.outFields = ["*"];
       countiesQuery.geometry = "intersects";
     }
+    function addAddressToList(point) {
+
+    }
+
+    function clearAddressList() {
+
+    }
 
     function initializeRouteVariables() {
       RouteParameters = new RouteParameters({
         stops: new FeatureSet(),
         outSpatialReference: { wkid: 102100 }
-      });
+      })
       /*for (i = 0; i < points.length; i++) {
         RouteParameters.stops.features.removeAll();
         directionsArray.removeAll();
@@ -576,6 +634,27 @@ require([
       })
     }
 
+    function createBuffer() {
+      var buffer_promise;
+      var bufferParams = new BufferParameters({
+        geometries: [{
+          type: "point",
+          x: lng,
+          y: lat,
+          spatialReference: { wkid: 102100 }
+      }],
+        distances: [100],
+        unit: "kilometers",
+        geodesic: true
+      });
 
+      buffer_promise = geometryService.buffer(bufferParams)
+        .then(response => {
+          return buffer[0];
+        })
+        .catch(err => {
+          console.log("createBuffer: ", err)
+        });
+    }
 
   });
