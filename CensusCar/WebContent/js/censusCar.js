@@ -102,8 +102,10 @@ require([
   "esri/tasks/QueryTask", "esri/tasks/support/Query",
   "esri/tasks/PrintTask",
   "esri/tasks/support/PrintParameters",
-  "esri/tasks/support/PrintTemplate"],
-  function (Map, MapView, Tiled, Graphic, GraphicsLayer, Search, Locator, dom, on, domReady, RouteTask, RouteParameters, GeometryService, DensifyParameters, geometryEngine, FeatureSet, FeatureLayer, QueryTask, Query, PrintTask, PrintParameters, PrintTemplate) {
+  "esri/tasks/support/PrintTemplate",
+  "esri/tasks/support/BufferParameters",
+  "esri/geometry/Point"],
+  function (Map, MapView, Tiled, Graphic, GraphicsLayer, Search, Locator, dom, on, domReady, RouteTask, RouteParameters, GeometryService, DensifyParameters, geometryEngine, FeatureSet, FeatureLayer, QueryTask, Query, PrintTask, PrintParameters, PrintTemplate, BufferParameters, Point) {
 
     getToken();
     prepareQueries();
@@ -257,7 +259,7 @@ require([
             */
           carLayer.removeAll();
           routesLayer.removeAll();
-          
+
           RouteParameters.stops.features = [];
           for (i = 0; i < points.length; i++) {
             RouteParameters.stops.features.push(points[i].graphic);
@@ -273,7 +275,6 @@ require([
             .then((data) => {
               var routeResult = data.routeResults[0].route;
               routeResult.symbol = routeStyle;
-              console.log("entra then");
               routesLayer.removeAll();
               routesLayer.add(routeResult);
 
@@ -290,13 +291,13 @@ require([
                 addFeatures: [routeGraphic]
               }).then(() => {
                 console.log("Save routes ok ");
-                routeQueryTask.execute(routeQuery).then(function (results) {
+                /*routeQueryTask.execute(routeQuery).then(function (results) {
                   console.log("routeQueryTask execute ok");
                   console.log(results.features);
                 })
                   .catch(err => {
                     console.log("error query: " + err);
-                  });
+                  });*/
               })
                 .catch(err => {
                   console.log("error: " + err);
@@ -343,7 +344,7 @@ require([
 
           var simulation = {
             iteration: 0,
-            buffer_size: 1, //getBufferSize(),
+            buffer_size: 25, //getBufferSize(),
             segment_length: 500, // 100m
             step: 5, //getSimStep(),
             travelled_length: 0, // km
@@ -485,12 +486,13 @@ require([
 
         // Busca la coordenada, crea el marcador.
         var next_coordinate = simulation.coordinates[simulation.iteration];
-        var carGraphic = createCarGraphyc(next_coordinate[0], next_coordinate[1]);
-        var visibilityGraphic = createVisibilityGraphyc(next_coordinate[0], next_coordinate[1]);
+        var car = createCarGraphyc(next_coordinate[0], next_coordinate[1]);
+        buffer = createBuffer(next_coordinate[0], next_coordinate[1]);
+        //var visibilityGraphic = createVisibilityGraphyc(next_coordinate[0], next_coordinate[1]);
         carLayer.removeAll();
-        carLayer.add(carGraphic);
+        carLayer.addMany([buffer, car]);/*
         visibilityLayer.removeAll();
-        visibilityLayer.add(visibilityGraphic);
+        visibilityLayer.add(visibilityGraphic);*/
         simulation.step = 5; //getSimStep();
         simulation.buffer_size = 1; //getBufferSize();
 
@@ -588,28 +590,39 @@ require([
         url: routeURL + responseToken
       })
     }
+    function createBuffer(x,y) {
 
-    function createBuffer() {
-      var buffer_promise;
-      var bufferParams = new BufferParameters({
-        geometries: [{
-          type: "point",
-          x: lng,
-          y: lat,
-          spatialReference: { wkid: 102100 }
-      }],
-        distances: [100],
+      /*var bufferParameters = new BufferParameters({
+        geometries: [carGraphic.geometries],
+        distances: [560],
+        geodesic = true;
         unit: "kilometers",
-        geodesic: true
-      });
-
-      buffer_promise = geometryService.buffer(bufferParams)
+        outSpatialReference: { "wkid": 102100 }
+      });*/
+      var bufferParameters = new BufferParameters();
+      bufferParameters.geometries = [new Point(x,y,{ "wkid": 102100 })];
+      bufferParameters.distances = [560]
+      bufferParameters.geodesic = true;
+      bufferParameters.unit = "kilometers";
+      bufferParameters.outSpatialReference = { "wkid": 102100 };
+      var bufferPromise = geometryService.buffer(bufferParameters)
         .then(response => {
-          return buffer[0];
+          return response[0];
         })
         .catch(err => {
           console.log("createBuffer: ", err)
         });
+
+      return Promise.all([bufferPromise]).then((result) => {
+        return new Graphic({
+          geometry: result[0],
+          symbol: visibilitySymbol
+        })
+      })
+      .catch(err => {
+        console.log("createBuffer Promise: ", err)
+      });;;
+
     }
 
   });
