@@ -600,15 +600,7 @@ require([
         url: routeURL + responseToken
       })
     }
-    function createBuffer(car,x,y) {
-    
-      /*var bufferParameters = new BufferParameters({
-        geometries: [carGraphic.geometries],
-        distances: [560],
-        geodesic = true;
-        unit: "kilometers",
-        outSpatialReference: { "wkid": 102100 }
-      });*/
+    function createBuffer(car) {    
       var bufferParameters = new BufferParameters();
       bufferParameters.geometries = [car.geometry];
       bufferParameters.distances = [20]
