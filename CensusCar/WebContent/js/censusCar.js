@@ -508,9 +508,9 @@ require([
         }else if ($('#valta')[0].checked){
           velocidad = 1000;
         }
-        setTimeout(updateSimulation(simulation), velocidad);
-        //await sleep(2000);
-        //updateSimulation(simulation);
+        //setTimeout(updateSimulation(simulation), velocidad);
+        await sleep(velocidad);
+        updateSimulation(simulation);
 
       }
     }
@@ -611,7 +611,7 @@ require([
       });*/
       var bufferParameters = new BufferParameters();
       bufferParameters.geometries = [car.geometry];
-      bufferParameters.distances = [560]
+      bufferParameters.distances = [20]
       bufferParameters.geodesic = true;
       bufferParameters.unit = "kilometers";
       bufferParameters.outSpatialReference = { "wkid": 102100 };
