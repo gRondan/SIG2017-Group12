@@ -174,7 +174,7 @@ require([
       saveDirection();
 
       // Cambios en View
-      updateStopsList(point);
+      updatePointsList();
     }
 
     // Crea el marcador del móvil

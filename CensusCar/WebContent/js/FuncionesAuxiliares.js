@@ -1,4 +1,4 @@
-function updateStopsList() {
+function updatePointsList() {
     document.getElementById("listaPuntos").innerHTML="";
     var j = 0;
     while (j < points.length){
@@ -20,7 +20,7 @@ function updateStopsList() {
         var btnUp = document.createElement('button');
         btnUp.setAttribute( 'class', 'btn btn-primary btn-link' );
         btnUp.id = "btnUp_" + j;
-        btnUp.setAttribute( 'onclick', "subirPto(" + j + ")" );
+        btnUp.setAttribute( 'onclick', "goUpPoint(" + j + ")" );
         //btnUp.setAttribute( 'style', 'float:right');
         var arrowUp = document.createElement('i');
         arrowUp.setAttribute( 'class', 'glyphicon glyphicon-arrow-up');
@@ -31,7 +31,7 @@ function updateStopsList() {
         var btnDown = document.createElement('button');
         btnDown.setAttribute( 'class', 'btn btn-primary btn-link' );
         btnDown.id = "btnDown_" + j;
-        btnDown.setAttribute( 'onclick', "bajarPto(" + j + ")" );
+        btnDown.setAttribute( 'onclick', "goDownPoint(" + j + ")" );
         //btnDown.setAttribute( 'style', 'float:right');
         var arrowDown = document.createElement('i');
         arrowDown.setAttribute( 'class', 'glyphicon glyphicon-arrow-down');
@@ -44,22 +44,22 @@ function updateStopsList() {
     }
 }
 
-function subirPto(id){
+function goUpPoint(id){
     //intercambiar puntos
     var aux = points[id];
     points[id] = points[id-1];
     points[id-1] = aux;
     //actualizar lista puntos web
-    updateStopsList();
+    updatePointsList();
 }
 
-function bajarPto(id){
+function goDownPoint(id){
     //intercambiar puntos
     var aux = points[id];
     points[id] = points[id+1];
     points[id+1] = aux;
     //actualizar lista puntos web
-    updateStopsList();
+    updatePointsList();
 }
 
 function eliminarPto(id){
@@ -69,5 +69,5 @@ function eliminarPto(id){
     // Saca el punto de los stops
     pointsLayer.remove(pointsLayer.graphics.items[id]);
   
-    updateStopsList();
+    updatePointsList();
   }
