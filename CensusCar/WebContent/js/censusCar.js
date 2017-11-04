@@ -616,12 +616,14 @@ require([
             }))
         })
         .catch(err => {
-          console.log("createBuffer: ", err)
+          console.log("createBuffer promise: ", err)
         });
 
       
+      })
+      .catch(err => {
+        console.log("createBuffer geometryService: ", err)
       });
-
     }
 
   });
