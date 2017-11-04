@@ -360,7 +360,7 @@ require([
 
             //disableSimButtons();
             //showToast("Simulación iniciada", "info");
-            updateSimulation(simulation);
+            setTimeout(updateSimulation(simulation), 100);
           });
         } else {
           //showToast("Primero debe indicarse una ruta.", "error");
@@ -499,8 +499,17 @@ require([
         simulation.iteration += simulation.step;
         simulation.travelled_length += simulation.segment_length * simulation.step;
         simulation.last_exec_time = performance.now();
-        await sleep(2000);
-        updateSimulation(simulation);
+        var velocidad;
+        if ($('#vbaja')[0].checked){
+          velocidad = 6000;
+        }else if ($('#vmedia')[0].checked){
+          velocidad = 3000;
+        }else if ($('#valta')[0].checked){
+          velocidad = 1000;
+        }
+        setTimeout(updateSimulation(simulation), velocidad);
+        //await sleep(2000);
+        //updateSimulation(simulation);
 
       }
     }
