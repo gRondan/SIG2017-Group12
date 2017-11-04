@@ -332,6 +332,9 @@ require([
 
         }
       };
+      document.getElementById("pauseSimulation").onclick = function startSimulation() {
+        simulating = false;
+      }
       document.getElementById("playSimulation").onclick = function startSimulation() {
         if (current_route) {
           if (simulating) {
@@ -360,7 +363,7 @@ require([
 
             //disableSimButtons();
             //showToast("Simulación iniciada", "info");
-            setTimeout(updateSimulation(simulation), 100);
+            updateSimulation(simulation);
           });
         } else {
           //showToast("Primero debe indicarse una ruta.", "error");
@@ -508,7 +511,6 @@ require([
         }else if ($('#valta')[0].checked){
           velocidad = 1000;
         }
-        //setTimeout(updateSimulation(simulation), velocidad);
         await sleep(velocidad);
         updateSimulation(simulation);
 
