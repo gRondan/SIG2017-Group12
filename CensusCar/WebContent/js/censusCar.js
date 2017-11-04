@@ -487,10 +487,11 @@ require([
         // Busca la coordenada, crea el marcador.
         var next_coordinate = simulation.coordinates[simulation.iteration];
         var car = createCarGraphyc(next_coordinate[0], next_coordinate[1]);
-        buffer = createBuffer(next_coordinate[0], next_coordinate[1]);
-        //var visibilityGraphic = createVisibilityGraphyc(next_coordinate[0], next_coordinate[1]);
         carLayer.removeAll();
-        carLayer.addMany([buffer, car]);/*
+        carLayer.add(car);
+        buffer = createBuffer(car, next_coordinate[0], next_coordinate[1]);
+        //var visibilityGraphic = createVisibilityGraphyc(next_coordinate[0], next_coordinate[1]);
+        /*
         visibilityLayer.removeAll();
         visibilityLayer.add(visibilityGraphic);*/
         simulation.step = 5; //getSimStep();
@@ -590,8 +591,8 @@ require([
         url: routeURL + responseToken
       })
     }
-    function createBuffer(x,y) {
-
+    function createBuffer(car,x,y) {
+    
       /*var bufferParameters = new BufferParameters({
         geometries: [carGraphic.geometries],
         distances: [560],
@@ -600,28 +601,26 @@ require([
         outSpatialReference: { "wkid": 102100 }
       });*/
       var bufferParameters = new BufferParameters();
-      bufferParameters.geometries = [new Point(x,y,{ "wkid": 102100 })];
+      bufferParameters.geometries = [car.geometry];
       bufferParameters.distances = [560]
       bufferParameters.geodesic = true;
       bufferParameters.unit = "kilometers";
       bufferParameters.outSpatialReference = { "wkid": 102100 };
-      var bufferPromise = geometryService.buffer(bufferParameters)
+      geometryService.buffer(bufferParameters)
         .then(response => {
-          return response[0];
+          var bufferPromise = response[0];
+          Promise.all([bufferPromise]).then((result) => {
+            carLayer.add(new Graphic({
+              geometry: result[0],
+              symbol: visibilitySymbol
+            }))
         })
         .catch(err => {
           console.log("createBuffer: ", err)
         });
 
-      return Promise.all([bufferPromise]).then((result) => {
-        return new Graphic({
-          geometry: result[0],
-          symbol: visibilitySymbol
-        })
-      })
-      .catch(err => {
-        console.log("createBuffer Promise: ", err)
-      });;;
+      
+      });
 
     }
 
