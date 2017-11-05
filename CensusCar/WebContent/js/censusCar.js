@@ -31,6 +31,7 @@ var carLayer
 var directionsFeatureLayer
 var routesFeatureLayer
 var visibilityLayer
+var velocityLayer
 //QUERY
 var directionsQueryTask
 var directionsQuery
@@ -105,11 +106,13 @@ require([
   "esri/tasks/support/PrintTemplate",
   "esri/tasks/support/BufferParameters",
   "esri/geometry/Point",
-  "esri/tasks/support/AreasAndLengthsParameters"],
+  "esri/tasks/support/AreasAndLengthsParameters",
+  "esri/geometry/Polyline"],
   function (Map, MapView, Tiled, Graphic, GraphicsLayer, Search, Locator, dom, on, domReady, RouteTask,
     RouteParameters, GeometryService, DensifyParameters, geometryEngine, FeatureSet, FeatureLayer, QueryTask,
-    Query, PrintTask, PrintParameters, PrintTemplate, BufferParameters, Point, AreasAndLengthsParameters) {
-
+    Query, PrintTask, PrintParameters, PrintTemplate, BufferParameters, Point, AreasAndLengthsParameters, 
+    Polyline) {
+  
     getToken();
     prepareQueries();
 
@@ -345,7 +348,7 @@ require([
             return;
           }
           simulating = true;
-          //velocityLyr.removeAll();
+          velocityLayer.removeAll();
           //chgSimBtn();
 
           var simulation = {
@@ -426,6 +429,12 @@ require([
         id: "visibilityLayer"
       });
       map.layers.add(visibilityLayer);
+
+      velocityLayer = new GraphicsLayer({
+        title: "Velocity",
+        id: "velocityLayer"
+      });
+      map.layers.add(velocityLayer);
     }
 
     function setFeatureLayers() {
@@ -500,12 +509,12 @@ require([
         /*
         visibilityLayer.removeAll();
         visibilityLayer.add(visibilityGraphic);*/
-        simulation.step = 5; //getSimStep();
-        simulation.buffer_size = 1; //getBufferSize();
+        /* simulation.step = 5;
+        simulation.buffer_size = 1; */
 
-        simulation.iteration += simulation.step;
+        /* simulation.iteration += simulation.step;
         simulation.travelled_length += simulation.segment_length * simulation.step;
-        simulation.last_exec_time = performance.now();
+        simulation.last_exec_time = performance.now(); */
         var velocidad;
         if ($('#vbaja')[0].checked) {
           velocidad = 6000;
@@ -515,6 +524,12 @@ require([
           velocidad = 1000;
         }
         await sleep(velocidad);
+        updateVelocityLine(simulation);
+        simulation.step = 5;
+        simulation.buffer_size = 1;
+        simulation.iteration += simulation.step;
+        simulation.travelled_length += simulation.segment_length * simulation.step;
+        simulation.last_exec_time = performance.now();
         updateSimulation(simulation);
 
       }
@@ -701,4 +716,34 @@ require([
             var populationDetected = county.total_population * intersectedArea;
           })
         }
+    // Calcula y crea la línea de velocidad
+    function updateVelocityLine(simulation){
+      var velocity_path = [];
+      var start = simulation.iteration - simulation.step >= 0 ? simulation.iteration - simulation.step : 0;
+      for(var i = start; i <= simulation.iteration; i++){
+          velocity_path.push(simulation.coordinates[i]);
+      }
+
+      var color;
+      if ($('#vbaja')[0].checked){
+        color = "green";
+      }else if ($('#vmedia')[0].checked){
+        color = "yellow";
+      }else if ($('#valta')[0].checked){
+        color = "red";
+      }
+
+      velocityLayer.graphics.add(new Graphic({
+          geometry: new Polyline({
+              paths: velocity_path,
+              spatialReference: { wkid: 102100 }
+          }),
+          symbol: {
+              type: "simple-line",
+              color: color,
+              width: "5",
+          }
+      }));
+  }
+
   });
