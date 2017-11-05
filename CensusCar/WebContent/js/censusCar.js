@@ -697,11 +697,19 @@ require([
                 //counties_list = "";
                 console.log("counties intersected: " + result.length);
                 result.forEach(countyInfo => {
-                  console.log("countyInfo.countyName: " + countyInfo.countyName);
+                  populationCalculated += countyInfo.populationDetected;
+                  $('#infoSimu').empty();
+                  $("<b> Estado: </b>"+countyInfo.countyName+ "<br/>"
+                    + "<b>Condado : Pob en buffer / Pob Total: </b><br/>"
+                    + countyInfo.countyName + ": " + Math.round(countyInfo.populationDetected) + " / " + Math.round(populationCalculated)+ "<br/>"
+                    + "<b>Total población en buffer: </b>" + Math.round(populationCalculated) +" hábitantes <br/>").appendTo( "#infoSimu" );
+
+
+                  /* console.log("countyInfo.countyName: " + countyInfo.countyName);
                   console.log("countyInfo.populationDetected: " + countyInfo.populationDetected);
                   populationCalculated += countyInfo.populationDetected;
                   //totalCountyPopulation += countyInfo.county_population;
-                  console.log("populationCalculated: " + populationCalculated);
+                  console.log("populationCalculated: " + populationCalculated); */
                   // countiesList += result.list_item;
                 });
 
