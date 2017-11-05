@@ -71,3 +71,7 @@ function eliminarPto(id){
   
     updatePointsList();
   }
+
+  $(document).ready(function() {
+    $('#infoList').prop('hidden',true);
+});

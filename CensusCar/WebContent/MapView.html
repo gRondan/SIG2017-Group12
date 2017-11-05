@@ -6,10 +6,6 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=7" />
   <title>Census Car</title>
-  <!-- Bootstrap Core CSS -->
-  <!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
-      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-      <link href="css/style.css" rel="stylesheet">-->
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
@@ -25,30 +21,41 @@
 <body>
   <div id="dir"></div>
   <div id="content">
-    <!-- Lista de Puntos -->
     <div id="ptosList" class="col-md-4" style="float: right;">
       <div class="panel panel-success listaPuntos">
-
         <div class="panel-heading">
           <h3 class="panel-title" style="font-size: 100%;">Lista de puntos</h3>
           <span class="pull-right clickable">
             <i class="glyphicon glyphicon-map-marker"></i>
           </span>
         </div>
-
         <div class="panel-body">
           <div class="row" id="listaPtos">
             <ul id="listaPuntos">
             </ul>
           </div>
         </div>
-
+      </div>
+    </div>
+    <div id="infoList" class="col-md-4" style="float: right;">
+      <div class="panel panel-success listaPuntos" style="background-color: rgba(82,84,82,0.75); color: #d0e9c6;font-weight: 300;">
+        <div class="panel-heading">
+          <h3 class="panel-title" style="font-size: 100%;">Info de puntos</h3>
+          <span class="pull-right clickable">
+            <i class="glyphicon glyphicon-minus"></i>
+          </span>
+        </div>
+        <div class="panel-body" style="margin:2%">
+          <div class="row" id="infoSimu">
+            <div id="list-items"></div>
+          </div>
+        </div>
       </div>
     </div>
     <div id="map"></div>
     <div id="menu">
       <nav class="navbar navbar-inverse bg-primary" style="margin-bottom: unset;">
-        <div class="row">
+        <div class="row" style="margin-right: unset; margin-left: unset;">
           <div class="col-xs-4">
             <div class="input-group stylish-input-group">
               <input id="address" type="text" class="form-control" placeholder="Search" autofocus>
@@ -71,11 +78,10 @@
           <button id="exportPDF" class="btn btn-primary" type="button">Export PDF
             <i class="glyphicon glyphicon-file"></i>
           </button>
-          <div class="col-md-3" style="padding:2px; text-align:center">
-            <!-- Seleccionar velocidad del movil -->
-            <div style="color: white; margin-left: 3%;">
+          <div class="col-md-3" style="text-align:center">
+            <div>
               <span> Velocidad del móvil: </span>
-              <form style="color: white; margin-left: 2%;">
+              <form>
                 <input type="radio" name="rd-velocidad" id="vbaja" value="vbaja" checked> Baja
                 <input type="radio" name="rd-velocidad" id="vmedia" value="vmedia"> Media
                 <input type="radio" name="rd-velocidad" id="valta" value="valta"> Alta
@@ -84,13 +90,12 @@
             </div>
           </div>
           <div class="col-xs-1">
-              <input id="buffSize" type="number" class="form-control" placeholder="Km's buff">
-            </div>
+            <input id="buffSize" type="number" class="form-control" placeholder="Km's buff">
+          </div>
         </div>
       </nav>
     </div>
   </div>
-
   </div>
   <script>
     $("#address").keyup(function (event) {
