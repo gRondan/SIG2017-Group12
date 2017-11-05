@@ -79,7 +79,21 @@ var countyGraphic = {
   color: [247, 153, 71, 0.3],
   width: 3
 };
-
+var countyGraphicLowPopulation = {
+  type: "simple-fill",
+  color: "green",
+  width: 3
+};
+var countyGraphicMediumPopulation = {
+  type: "simple-fill",
+  color: "yellow",
+  width: 3
+};
+var countyGraphicHighPopulation = {
+  type: "simple-fill",
+  color: "red",
+  width: 3
+};
 
 
 require([
@@ -677,13 +691,18 @@ require([
           if (result[0]) {
             var populationPromises = [];
             result[0].forEach(county => {
-              countiesLayer.add(county.graphic);
+              /*countiesLayer.add(new Graphic({
+                geometry: county.graphic.geometry,
+                symbol: countyGraphic
+              }));*/
 
               populationPromises.push(
                 calculatePopulation(county, buffer).then(intersectResult => {
                   var countyName = intersectResult.countyName;
                   var populationDetected = intersectResult.populationDetected;
-                  return { countyName, populationDetected };
+                  var countyGeometry = intersectResult.countyGeometry;
+                  var totalCountyPopulation = intersectResult.totalCountyPopulation;
+                  return { countyName, populationDetected, countyGeometry, totalCountyPopulation };
                 }
                 ));
             })
@@ -693,6 +712,12 @@ require([
                 //counties_list = "";
                 console.log("counties intersected: " + result.length);
                 result.forEach(countyInfo => {
+                  var populationGraphic;
+                  //if 
+                  countiesLayer.add(new Graphic({
+                    geometry: countyInfo.countyGeometry,
+                    symbol: countyGraphic
+                  }));
                   console.log("countyInfo.countyName: " + countyInfo.countyName);
                   console.log("countyInfo.populationDetected: " + countyInfo.populationDetected);
                   populationCalculated += countyInfo.populationDetected;
@@ -731,9 +756,11 @@ require([
         var intersectedArea = result[0] / (county.landArea * 2.58999);
         var populationDetected = county.totalPopulation * intersectedArea;
         var countyName = county.name;
+        var countyGeometry = county.graphic.geometry;
+        var totalCountyPopulation = county.totalPopulation;
         //console.log("county.name: " + county.name);
         //console.log("populationDetected: " + populationDetected);
-        return { countyName, populationDetected };
+        return { countyName, populationDetected, countyGeometry, totalCountyPopulation };
       })
     }
     // Calcula y crea la línea de velocidad
