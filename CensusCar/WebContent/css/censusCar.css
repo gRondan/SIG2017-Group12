@@ -1,9 +1,13 @@
 
-html, body, #map {
+html, #map {
     padding: 0;
     margin: 0;
     height: 97%;
     width: 100%;
+}
+
+body {
+    height: 100%;
 }
 
 #menu {

@@ -110,9 +110,9 @@ require([
   "esri/geometry/Polyline"],
   function (Map, MapView, Tiled, Graphic, GraphicsLayer, Search, Locator, dom, on, domReady, RouteTask,
     RouteParameters, GeometryService, DensifyParameters, geometryEngine, FeatureSet, FeatureLayer, QueryTask,
-    Query, PrintTask, PrintParameters, PrintTemplate, BufferParameters, Point, AreasAndLengthsParameters, 
+    Query, PrintTask, PrintParameters, PrintTemplate, BufferParameters, Point, AreasAndLengthsParameters,
     Polyline) {
-  
+
     getToken();
     prepareQueries();
 
@@ -353,7 +353,7 @@ require([
 
           var simulation = {
             iteration: 0,
-            buffer_size: 25, //getBufferSize(),
+            buffer_size: getBuffSize(),
             segment_length: 500, // 100m
             step: 5, //getSimStep(),
             travelled_length: 0, // km
@@ -522,11 +522,14 @@ require([
           velocidad = 3000;
         } else if ($('#valta')[0].checked) {
           velocidad = 1000;
+        } else if ($('#vmuyalta')[0].checked) {
+          velocidad = 250;
         }
+
         await sleep(velocidad);
         updateVelocityLine(simulation);
         simulation.step = 5;
-        simulation.buffer_size = 1;
+        simulation.buffer_size = getBuffSize();
         simulation.iteration += simulation.step;
         simulation.travelled_length += simulation.segment_length * simulation.step;
         simulation.last_exec_time = performance.now();
@@ -623,7 +626,7 @@ require([
     function createBuffer(car) {
       var bufferParameters = new BufferParameters();
       bufferParameters.geometries = [car.geometry];
-      bufferParameters.distances = [20]
+      bufferParameters.distances = [getBuffSize()]
       bufferParameters.geodesic = true;
       bufferParameters.unit = "kilometers";
       bufferParameters.outSpatialReference = { "wkid": 102100 };
@@ -701,49 +704,62 @@ require([
     }
 
     function calculatePopulation(county, buffer) {
-          var intersectPromise = geometryService.intersect([buffer.geometry], county.graphic.geometry).then(intersectResult => {
-            var areasAndLengthsParameters = new AreasAndLengthsParameters();
-            areasAndLengthsParameters.polygons = intersectResult;
-            areasAndLengthsParameters.areaUnit = "square-kilometers";
-            areasAndLengthsParameters.lengthUnit = "kilometers";
-            areasAndLengthsParameters.calculationType = "preserve-shape";
-            return geometryService.areasAndLength(areasAndLengthsParameters).then(areaResult => {
-              return areaResult[0];
-            })
-          });
-          Promise.all([intersectPromise]).then(result => {
-            var intersectedArea = result[0] / (county.land_area * 2.58999);
-            var populationDetected = county.total_population * intersectedArea;
-          })
-        }
+      var intersectPromise = geometryService.intersect([buffer.geometry], county.graphic.geometry).then(intersectResult => {
+        var areasAndLengthsParameters = new AreasAndLengthsParameters();
+        areasAndLengthsParameters.polygons = intersectResult;
+        areasAndLengthsParameters.areaUnit = "square-kilometers";
+        areasAndLengthsParameters.lengthUnit = "kilometers";
+        areasAndLengthsParameters.calculationType = "preserve-shape";
+        return geometryService.areasAndLength(areasAndLengthsParameters).then(areaResult => {
+          return areaResult[0];
+        })
+      });
+      Promise.all([intersectPromise]).then(result => {
+        var intersectedArea = result[0] / (county.land_area * 2.58999);
+        var populationDetected = county.total_population * intersectedArea;
+      })
+    }
     // Calcula y crea la línea de velocidad
-    function updateVelocityLine(simulation){
+    function updateVelocityLine(simulation) {
       var velocity_path = [];
       var start = simulation.iteration - simulation.step >= 0 ? simulation.iteration - simulation.step : 0;
-      for(var i = start; i <= simulation.iteration; i++){
-          velocity_path.push(simulation.coordinates[i]);
+      for (var i = start; i <= simulation.iteration; i++) {
+        velocity_path.push(simulation.coordinates[i]);
       }
 
       var color;
-      if ($('#vbaja')[0].checked){
+      if ($('#vbaja')[0].checked) {
         color = "green";
-      }else if ($('#vmedia')[0].checked){
+      } else if ($('#vmedia')[0].checked) {
         color = "yellow";
-      }else if ($('#valta')[0].checked){
+      } else if ($('#valta')[0].checked) {
+        color = "orange";
+      } else if ($('#vmuyalta')[0].checked) {
         color = "red";
       }
 
+
       velocityLayer.graphics.add(new Graphic({
-          geometry: new Polyline({
-              paths: velocity_path,
-              spatialReference: { wkid: 102100 }
-          }),
-          symbol: {
-              type: "simple-line",
-              color: color,
-              width: "5",
-          }
+        geometry: new Polyline({
+          paths: velocity_path,
+          spatialReference: { wkid: 102100 }
+        }),
+        symbol: {
+          type: "simple-line",
+          color: color,
+          width: "4",
+        }
       }));
+    }
+
+    // Retorna el valor del buffer ingresado
+    function getBuffSize(){
+      var val = $("#buffSize").val();
+      if(val && parseInt(val) >= 1){
+          return parseInt(val);
+      }else{
+          return 1;
+      }
   }
 
   });
