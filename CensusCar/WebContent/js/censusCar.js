@@ -298,7 +298,8 @@ require([
               routeResult.symbol = routeStyle;
               routesLayer.removeAll();
               routesLayer.add(routeResult);
-
+              var car = createCarGraphyc(points[0].graphic.geometry.x, points[0].graphic.geometry.y);
+              carLayer.add(car);
               current_route = routeResult;
               console.log(current_route);
 
@@ -331,8 +332,7 @@ require([
 
 
             })
-          var car = createCarGraphyc(points[0].graphic.geometry.x, points[0].graphic.geometry.y);
-          carLayer.add(car);
+          
           directionsFeatureLayer.applyEdits({
             addFeatures: directionsArray
           })
