@@ -354,6 +354,8 @@ require([
       };
       document.getElementById("pauseSimulation").onclick = function startSimulation() {
         simulating = false;
+        $('#ptosList').prop('hidden',false);
+        $('#infoList').prop('hidden',true);
       }
       document.getElementById("playSimulation").onclick = function startSimulation() {
         if (current_route) {
@@ -361,6 +363,8 @@ require([
             //showToast("Hay una simulación en curso.", "error");
             return;
           }
+          $('#ptosList').prop('hidden',true);
+          $('#infoList').prop('hidden',false);
           simulating = true;
           velocityLayer.removeAll();
           //chgSimBtn();
@@ -369,7 +373,7 @@ require([
             iteration: 0,
             buffer_size: getBuffSize(),
             segment_length: 500, // 100m
-            step: 5, //getSimStep(),
+            step: 10*getBuffSize(), //getSimStep(),
             travelled_length: 0, // km
             last_exec_time: 0,
             coordinates: null
@@ -573,7 +577,7 @@ require([
           });
       } else if(mode == "engine"){*/
       path_promise = Promise.resolve(
-        geometryEngine.densify(current_route.geometry, simulation.segment_length, "meters").paths[0]
+        geometryEngine.densify(current_route.geometry, simulation.segment_length, "kilometers").paths[0]
       );
       //}
 
