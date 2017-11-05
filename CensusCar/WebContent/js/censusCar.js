@@ -23,6 +23,7 @@ var current_route = null;
 var addressResult
 var xDirection
 var yDirection
+var trayectoryPopulation
 //LAYERS
 var pointsLayer
 var routesLayer
@@ -297,7 +298,8 @@ require([
               routeResult.symbol = routeStyle;
               routesLayer.removeAll();
               routesLayer.add(routeResult);
-
+              var car = createCarGraphyc(points[0].graphic.geometry.x, points[0].graphic.geometry.y);
+              carLayer.add(car);
               current_route = routeResult;
               console.log(current_route);
 
@@ -330,8 +332,7 @@ require([
 
 
             })
-          var car = createCarGraphyc(points[0].graphic.geometry.x, points[0].graphic.geometry.y);
-          carLayer.add(car);
+          
           directionsFeatureLayer.applyEdits({
             addFeatures: directionsArray
           })
@@ -365,6 +366,7 @@ require([
           }
           $('#ptosList').prop('hidden',true);
           $('#infoList').prop('hidden',false);
+          trayectoryPopulation = 0;
           simulating = true;
           //velocityLayer.removeAll();
           //chgSimBtn();
@@ -736,6 +738,17 @@ require([
                 //updateLayersElements(car,buffer,simulation);
 
                 result.forEach(countyInfo => {
+                  populationCalculated += countyInfo.populationDetected;
+                  trayectoryPopulation += countyInfo.populationDetected;
+                  $('#infoSimu').empty();
+                  $("<b> Estado: </b>"+countyInfo.countyName+ "<br/>"
+                    + "<b>Condado : Pob en buffer / Pob Total: </b><br/>"
+                    + countyInfo.countyName + ": " + Math.round(countyInfo.populationDetected) + " / " + Math.round(countyInfo.totalCountyPopulation)+ "<br/>"
+                    + "<b>Total población en buffer: </b>" + Math.round(populationCalculated) +" hábitantes <br/>"
+                    + "<b>Total población en trayectoria: </b>" + Math.round(trayectoryPopulation) +" hábitantes <br/>").appendTo( "#infoSimu" );
+
+
+                  /* console.log("countyInfo.countyName: " + countyInfo.countyName);
                   var populationGraphic;
                   
                   /*countiesLayer.add(new Graphic({
