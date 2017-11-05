@@ -639,7 +639,9 @@ require([
               symbol: visibilitySymbol
             });
             carLayer.add(buffer);
+            countiesLayer.removeAll();
             queryPopulation(buffer);
+            carLayer.add(buffer);
           })
             .catch(err => {
               console.log("createBuffer promise: ", err)
@@ -675,7 +677,7 @@ require([
           if (result[0]) {
             var populationPromises = [];
             result[0].forEach(county => {
-              // countiesGraphics.push(county.graphic);
+              countiesLayer.add(county.graphic);
 
               populationPromises.push(
                 calculatePopulation(county, buffer).then(intersectResult => {
