@@ -37,7 +37,9 @@ var velocityLayer
 var directionsQueryTask
 var directionsQuery
 var routeQueryTask
+var savedRouteQueryTask
 var routeQuery
+var savedRoutesQuery
 var countiesQueryTask
 var countiesQuery
 
@@ -306,13 +308,14 @@ require([
               var routeGraphic = new Graphic();
               routeGraphic.geometry = current_route.geometry;
               routeGraphic.attributes = {
-                name: "routeGraphic",
+                name: `SigGroup12_${points[0].name}_${points[points.length - 1].name}`,
                 trailtype: 4
               };
               routesFeatureLayer.applyEdits({
                 addFeatures: [routeGraphic]
               }).then(() => {
                 console.log("Save routes ok ");
+                console.log(routeGraphic);
                 /*routeQueryTask.execute(routeQuery).then(function (results) {
                   console.log("routeQueryTask execute ok");
                   console.log(results.features);
@@ -332,7 +335,7 @@ require([
 
 
             })
-          
+
           directionsFeatureLayer.applyEdits({
             addFeatures: directionsArray
           })
@@ -355,8 +358,8 @@ require([
       };
       document.getElementById("pauseSimulation").onclick = function startSimulation() {
         simulating = false;
-        $('#ptosList').prop('hidden',false);
-        $('#infoList').prop('hidden',true);
+        $('#ptosList').prop('hidden', false);
+        $('#infoList').prop('hidden', true);
       }
       document.getElementById("playSimulation").onclick = function startSimulation() {
         if (current_route) {
@@ -364,8 +367,8 @@ require([
             //showToast("Hay una simulación en curso.", "error");
             return;
           }
-          $('#ptosList').prop('hidden',true);
-          $('#infoList').prop('hidden',false);
+          $('#ptosList').prop('hidden', true);
+          $('#infoList').prop('hidden', false);
           trayectoryPopulation = 0;
           simulating = true;
           velocityLayer.removeAll();
@@ -375,7 +378,7 @@ require([
             iteration: 0,
             buffer_size: getBuffSize(),
             segment_length: 500, // 100m
-            step: 10*getBuffSize(), //getSimStep(),
+            step: 10 * getBuffSize(), //getSimStep(),
             travelled_length: 0, // km
             last_exec_time: 0,
             coordinates: null
@@ -396,6 +399,42 @@ require([
           return;
         }
       }
+
+      document.getElementById("cargarRutas").onclick = function CargarRutas() {
+        
+
+          /* var query = new Query();
+          query.where = `name = 'sig_grupo7_${name}'`;
+          query.returnGeometry = true;
+          query.outSpatialReference = { wkid: 102100 }; */
+          /* savedRoutesQuery = new Query();
+          savedRoutesQuery.returnGeometry = true;
+          savedRoutesQuery.outSpatialReference = { wkid: 102100 };
+          savedRoutesQuery.outFields = ["*"]; */
+          //savedRoutesQuery.where = `name = 'SigGroup12_'`;
+
+          /* routesFeatureLayer.queryFeatures(savedRoutesQuery)
+            .then(featureSet => {
+              var routeResult = {
+                geometry: featureSet.features[0].geometry,
+                symbol: routeSymbol
+              };
+              console.log(routeResult);
+            })
+            .catch(err => {
+              console.log("Load Route: ", err);
+            }); */
+
+            savedRouteQueryTask.execute(savedRoutesQuery).then(results=> {
+              console.log("savedRouteQueryTask execute ok");
+              console.log(results.features);
+            })
+              .catch(err => {
+                console.log("error query savedRouteQueryTask: " + err);
+              });
+      }
+
+
       document.getElementById("exportPDF").onclick = function exportPDF() {
         var printTask = new PrintTask({
           url: exportPDFURL
@@ -621,6 +660,13 @@ require([
       countiesQuery.returnGeometry = true;
       countiesQuery.outFields = ["*"];
       countiesQuery.geometry = "intersects";
+
+      savedRouteQueryTask = new QueryTask({
+        url: routesFeatureLayerURL
+      });
+      savedRoutesQuery = new Query();
+      savedRoutesQuery.returnGeometry = true;
+      savedRoutesQuery.outFields = ["*"];
     }
     function addAddressToList(point) {
 
@@ -721,11 +767,11 @@ require([
                   populationCalculated += countyInfo.populationDetected;
                   trayectoryPopulation += countyInfo.populationDetected;
                   $('#infoSimu').empty();
-                  $("<b> Estado: </b>"+countyInfo.countyName+ "<br/>"
+                  $("<b> Estado: </b>" + countyInfo.countyName + "<br/>"
                     + "<b>Condado : Pob en buffer / Pob Total: </b><br/>"
-                    + countyInfo.countyName + ": " + Math.round(countyInfo.populationDetected) + " / " + Math.round(countyInfo.totalCountyPopulation)+ "<br/>"
-                    + "<b>Total población en buffer: </b>" + Math.round(populationCalculated) +" hábitantes <br/>"
-                    + "<b>Total población en trayectoria: </b>" + Math.round(trayectoryPopulation) +" hábitantes <br/>").appendTo( "#infoSimu" );
+                    + countyInfo.countyName + ": " + Math.round(countyInfo.populationDetected) + " / " + Math.round(countyInfo.totalCountyPopulation) + "<br/>"
+                    + "<b>Total población en buffer: </b>" + Math.round(populationCalculated) + " hábitantes <br/>"
+                    + "<b>Total población en trayectoria: </b>" + Math.round(trayectoryPopulation) + " hábitantes <br/>").appendTo("#infoSimu");
 
 
                   /* console.log("countyInfo.countyName: " + countyInfo.countyName);
