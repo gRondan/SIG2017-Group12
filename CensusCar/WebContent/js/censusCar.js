@@ -104,8 +104,11 @@ require([
   "esri/tasks/support/PrintParameters",
   "esri/tasks/support/PrintTemplate",
   "esri/tasks/support/BufferParameters",
-  "esri/geometry/Point"],
-  function (Map, MapView, Tiled, Graphic, GraphicsLayer, Search, Locator, dom, on, domReady, RouteTask, RouteParameters, GeometryService, DensifyParameters, geometryEngine, FeatureSet, FeatureLayer, QueryTask, Query, PrintTask, PrintParameters, PrintTemplate, BufferParameters, Point) {
+  "esri/geometry/Point",
+  "esri/tasks/support/AreasAndLengthsParameters"],
+  function (Map, MapView, Tiled, Graphic, GraphicsLayer, Search, Locator, dom, on, domReady, RouteTask,
+    RouteParameters, GeometryService, DensifyParameters, geometryEngine, FeatureSet, FeatureLayer, QueryTask,
+    Query, PrintTask, PrintParameters, PrintTemplate, BufferParameters, Point, AreasAndLengthsParameters) {
 
     getToken();
     prepareQueries();
@@ -504,11 +507,11 @@ require([
         simulation.travelled_length += simulation.segment_length * simulation.step;
         simulation.last_exec_time = performance.now();
         var velocidad;
-        if ($('#vbaja')[0].checked){
+        if ($('#vbaja')[0].checked) {
           velocidad = 6000;
-        }else if ($('#vmedia')[0].checked){
+        } else if ($('#vmedia')[0].checked) {
           velocidad = 3000;
-        }else if ($('#valta')[0].checked){
+        } else if ($('#valta')[0].checked) {
           velocidad = 1000;
         }
         await sleep(velocidad);
@@ -602,7 +605,7 @@ require([
         url: routeURL + responseToken
       })
     }
-    function createBuffer(car) {    
+    function createBuffer(car) {
       var bufferParameters = new BufferParameters();
       bufferParameters.geometries = [car.geometry];
       bufferParameters.distances = [20]
@@ -613,20 +616,89 @@ require([
         .then(response => {
           var bufferPromise = response[0];
           Promise.all([bufferPromise]).then((result) => {
-            carLayer.add(new Graphic({
+            var buffer = new Graphic({
               geometry: result[0],
               symbol: visibilitySymbol
-            }))
+            });
+            carLayer.add(buffer);
+            calculatePoblation(buffer);
+          })
+            .catch(err => {
+              console.log("createBuffer promise: ", err)
+            });
         })
         .catch(err => {
-          console.log("createBuffer promise: ", err)
+          console.log("createBuffer geometryService: ", err)
         });
+    }
+    function queryPopulation(buffer) {
+      var countyQuery = new Query();
+      countyQuery.geometry = buffer.geometry;
+      countyQuery.spatialRelationship = "intersects";
+      countyQuery.outFields = ["*"];
+      countyQuery.outSpatialReference = { wkid: 102100 };
+      countyQuery.returnGeometry = true;
 
-      
+      countiesQueryTask.execute(countyQuery).then(data => {
+        var countiesIntersected = [];
+        data.features.forEach(feature => {
+          countiesIntersected.push({
+            name: feature.attributes.NAME,
+            totalPopulation: feature.attributes.TOTPOP_CY,
+            landArea: feature.attributes.LANDAREA,
+            //stAbbrev: feature.attributes.ST_ABBREV,
+            graphic: new Graphic({
+              geometry: feature.geometry,
+              symbol: countyGraphic
+            })
+          });
+        })
+        Promise.all([countiesIntersected]).then(result => {
+          if (result[0]) {
+            var populationPromises = [];
+            results[0].forEach(county => {
+              countiesGraphics.push(county.graphic);
+              populationPromises.push(
+                calculatePopulation(county, buffer).then(local_population => {
+                  return {
+                    local_population: local_population,
+                    county_population: county.total_population,
+                  }
+                }
+                ));
+              countiesPromise = Promise.all(populationPromises)
+                .then(result => {
+                  var totalLocalPopulation = 0;
+                  var totalCountyPopulation = 0;
+                  counties_list = "";
+                  result.forEach(countyInfo => {
+                    totalLocalPopulation += countyInfo.local_population;
+                    totalCountyPopulation += countyInfo.county_population;
+                    countiesList += result.list_item;
+                  });
+
+                });
+
+            })
+          }
+        })
       })
-      .catch(err => {
-        console.log("createBuffer geometryService: ", err)
-      });
     }
 
+    function calculatePopulation(county, buffer) {
+          var intersectPromise = geometryService.intersect([buffer.geometry], county.graphic.geometry).then(intersectResult => {
+            var areasAndLengthsParameters = new AreasAndLengthsParameters();
+            areasAndLengthsParameters.polygons = intersectResult;
+            areasAndLengthsParameters.areaUnit = "square-kilometers";
+            areasAndLengthsParameters.lengthUnit = "kilometers";
+            areasAndLengthsParameters.calculationType = "preserve-shape";
+            return geometryService.areasAndLength(areasAndLengthsParameters).then(areaResult => {
+              return areaResult[0];
+            })
+          });
+          Promise.all([intersectPromise]).then(result => {
+            var intersectedArea = result[0] / (county.land_area * 2.58999);
+            var populationDetected = county.total_population * intersectedArea;
+          })
+        }
   });
