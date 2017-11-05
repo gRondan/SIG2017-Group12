@@ -110,9 +110,9 @@ require([
   "esri/geometry/Polyline"],
   function (Map, MapView, Tiled, Graphic, GraphicsLayer, Search, Locator, dom, on, domReady, RouteTask,
     RouteParameters, GeometryService, DensifyParameters, geometryEngine, FeatureSet, FeatureLayer, QueryTask,
-    Query, PrintTask, PrintParameters, PrintTemplate, BufferParameters, Point, AreasAndLengthsParameters, 
+    Query, PrintTask, PrintParameters, PrintTemplate, BufferParameters, Point, AreasAndLengthsParameters,
     Polyline) {
-  
+
     getToken();
     prepareQueries();
 
@@ -636,7 +636,7 @@ require([
               symbol: visibilitySymbol
             });
             carLayer.add(buffer);
-            calculatePoblation(buffer);
+            queryPopulation(buffer);
           })
             .catch(err => {
               console.log("createBuffer promise: ", err)
@@ -671,79 +671,94 @@ require([
         Promise.all([countiesIntersected]).then(result => {
           if (result[0]) {
             var populationPromises = [];
-            results[0].forEach(county => {
-              countiesGraphics.push(county.graphic);
+            result[0].forEach(county => {
+              // countiesGraphics.push(county.graphic);
+
               populationPromises.push(
-                calculatePopulation(county, buffer).then(local_population => {
-                  return {
-                    local_population: local_population,
-                    county_population: county.total_population,
-                  }
+                calculatePopulation(county, buffer).then(intersectResult => {
+                  var countyName = intersectResult.countyName;
+                  var populationDetected = intersectResult.populationDetected;
+                  return {countyName,populationDetected};
                 }
                 ));
-              countiesPromise = Promise.all(populationPromises)
-                .then(result => {
-                  var totalLocalPopulation = 0;
-                  var totalCountyPopulation = 0;
-                  counties_list = "";
-                  result.forEach(countyInfo => {
-                    totalLocalPopulation += countyInfo.local_population;
-                    totalCountyPopulation += countyInfo.county_population;
-                    countiesList += result.list_item;
-                  });
-
+            })
+            countiesPromise = Promise.all(populationPromises)
+              .then(result => {
+                var populationCalculated = 0;
+                //counties_list = "";
+                console.log("counties intersected: " + result.length);
+                result.forEach(countyInfo => {
+                  console.log("countyInfo.countyName: "+countyInfo.countyName);
+                  console.log("countyInfo.populationDetected: "+countyInfo.populationDetected);
+                  populationCalculated += countyInfo.populationDetected;
+                  //totalCountyPopulation += countyInfo.county_population;
+                  console.log("populationCalculated: " + populationCalculated);
+                  // countiesList += result.list_item;
                 });
 
-            })
+              });
+
+
           }
         })
       })
     }
 
     function calculatePopulation(county, buffer) {
-          var intersectPromise = geometryService.intersect([buffer.geometry], county.graphic.geometry).then(intersectResult => {
-            var areasAndLengthsParameters = new AreasAndLengthsParameters();
-            areasAndLengthsParameters.polygons = intersectResult;
-            areasAndLengthsParameters.areaUnit = "square-kilometers";
-            areasAndLengthsParameters.lengthUnit = "kilometers";
-            areasAndLengthsParameters.calculationType = "preserve-shape";
-            return geometryService.areasAndLength(areasAndLengthsParameters).then(areaResult => {
-              return areaResult[0];
-            })
-          });
-          Promise.all([intersectPromise]).then(result => {
-            var intersectedArea = result[0] / (county.land_area * 2.58999);
-            var populationDetected = county.total_population * intersectedArea;
-          })
-        }
+      var intersectPromise = geometryService.intersect([buffer.geometry], county.graphic.geometry).then(intersectResult => {
+        var areasAndLengthsParameters = new AreasAndLengthsParameters();
+        areasAndLengthsParameters.polygons = intersectResult;
+        areasAndLengthsParameters.areaUnit = "square-kilometers";
+        areasAndLengthsParameters.lengthUnit = "kilometers";
+        areasAndLengthsParameters.calculationType = "preserve-shape";
+        return geometryService.areasAndLengths(areasAndLengthsParameters).then(areaResult => {
+         // console.log("areaResult: " + areaResult)
+         // console.log("areaResult.areas[0]: " + areaResult.areas[0])
+          return areaResult.areas[0];
+        }).catch(err => {
+          console.log("areasAndLengths err: " + err);
+        })
+
+      }).catch(err => {
+        console.log("intersect err: " + err);
+      });
+      return Promise.all([intersectPromise]).then(result => {
+        var intersectedArea = result[0] / (county.landArea * 2.58999);
+        var populationDetected = county.totalPopulation * intersectedArea;
+        var countyName = county.name;
+        //console.log("county.name: " + county.name);
+        //console.log("populationDetected: " + populationDetected);
+        return { countyName, populationDetected   };
+      })
+    }
     // Calcula y crea la línea de velocidad
-    function updateVelocityLine(simulation){
+    function updateVelocityLine(simulation) {
       var velocity_path = [];
       var start = simulation.iteration - simulation.step >= 0 ? simulation.iteration - simulation.step : 0;
-      for(var i = start; i <= simulation.iteration; i++){
-          velocity_path.push(simulation.coordinates[i]);
+      for (var i = start; i <= simulation.iteration; i++) {
+        velocity_path.push(simulation.coordinates[i]);
       }
 
       var color;
-      if ($('#vbaja')[0].checked){
+      if ($('#vbaja')[0].checked) {
         color = "green";
-      }else if ($('#vmedia')[0].checked){
+      } else if ($('#vmedia')[0].checked) {
         color = "yellow";
-      }else if ($('#valta')[0].checked){
+      } else if ($('#valta')[0].checked) {
         color = "red";
       }
 
       velocityLayer.graphics.add(new Graphic({
-          geometry: new Polyline({
-              paths: velocity_path,
-              spatialReference: { wkid: 102100 }
-          }),
-          symbol: {
-              type: "simple-line",
-              color: color,
-              width: "5",
-          }
+        geometry: new Polyline({
+          paths: velocity_path,
+          spatialReference: { wkid: 102100 }
+        }),
+        symbol: {
+          type: "simple-line",
+          color: color,
+          width: "5",
+        }
       }));
-  }
+    }
 
   });
