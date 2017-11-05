@@ -353,7 +353,7 @@ require([
 
           var simulation = {
             iteration: 0,
-            buffer_size: 25, //getBufferSize(),
+            buffer_size: getBuffSize(),
             segment_length: 500, // 100m
             step: 5, //getSimStep(),
             travelled_length: 0, // km
@@ -522,11 +522,14 @@ require([
           velocidad = 3000;
         } else if ($('#valta')[0].checked) {
           velocidad = 1000;
+        } else if ($('#vmuyalta')[0].checked) {
+          velocidad = 250;
         }
+
         await sleep(velocidad);
         updateVelocityLine(simulation);
         simulation.step = 5;
-        simulation.buffer_size = 1;
+        simulation.buffer_size = getBuffSize();
         simulation.iteration += simulation.step;
         simulation.travelled_length += simulation.segment_length * simulation.step;
         simulation.last_exec_time = performance.now();
@@ -623,7 +626,7 @@ require([
     function createBuffer(car) {
       var bufferParameters = new BufferParameters();
       bufferParameters.geometries = [car.geometry];
-      bufferParameters.distances = [20]
+      bufferParameters.distances = [getBuffSize()]
       bufferParameters.geodesic = true;
       bufferParameters.unit = "kilometers";
       bufferParameters.outSpatialReference = { "wkid": 102100 };
@@ -678,7 +681,7 @@ require([
                 calculatePopulation(county, buffer).then(intersectResult => {
                   var countyName = intersectResult.countyName;
                   var populationDetected = intersectResult.populationDetected;
-                  return {countyName,populationDetected};
+                  return { countyName, populationDetected };
                 }
                 ));
             })
@@ -688,8 +691,8 @@ require([
                 //counties_list = "";
                 console.log("counties intersected: " + result.length);
                 result.forEach(countyInfo => {
-                  console.log("countyInfo.countyName: "+countyInfo.countyName);
-                  console.log("countyInfo.populationDetected: "+countyInfo.populationDetected);
+                  console.log("countyInfo.countyName: " + countyInfo.countyName);
+                  console.log("countyInfo.populationDetected: " + countyInfo.populationDetected);
                   populationCalculated += countyInfo.populationDetected;
                   //totalCountyPopulation += countyInfo.county_population;
                   console.log("populationCalculated: " + populationCalculated);
@@ -712,8 +715,8 @@ require([
         areasAndLengthsParameters.lengthUnit = "kilometers";
         areasAndLengthsParameters.calculationType = "preserve-shape";
         return geometryService.areasAndLengths(areasAndLengthsParameters).then(areaResult => {
-         // console.log("areaResult: " + areaResult)
-         // console.log("areaResult.areas[0]: " + areaResult.areas[0])
+          // console.log("areaResult: " + areaResult)
+          // console.log("areaResult.areas[0]: " + areaResult.areas[0])
           return areaResult.areas[0];
         }).catch(err => {
           console.log("areasAndLengths err: " + err);
@@ -728,7 +731,7 @@ require([
         var countyName = county.name;
         //console.log("county.name: " + county.name);
         //console.log("populationDetected: " + populationDetected);
-        return { countyName, populationDetected   };
+        return { countyName, populationDetected };
       })
     }
     // Calcula y crea la línea de velocidad
@@ -745,8 +748,11 @@ require([
       } else if ($('#vmedia')[0].checked) {
         color = "yellow";
       } else if ($('#valta')[0].checked) {
+        color = "orange";
+      } else if ($('#vmuyalta')[0].checked) {
         color = "red";
       }
+
 
       velocityLayer.graphics.add(new Graphic({
         geometry: new Polyline({
@@ -756,9 +762,19 @@ require([
         symbol: {
           type: "simple-line",
           color: color,
-          width: "5",
+          width: "4",
         }
       }));
+    }
+
+    // Retorna el valor del buffer ingresado
+    function getBuffSize() {
+      var val = $("#buffSize").val();
+      if (val && parseInt(val) >= 1) {
+        return parseInt(val);
+      } else {
+        return 1;
+      }
     }
 
   });
