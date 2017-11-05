@@ -40,7 +40,7 @@ var routeQueryTask
 var routeQuery
 var countiesQueryTask
 var countiesQuery
-
+var simulation
 //Estilo de la ruta
 
 
@@ -371,7 +371,7 @@ require([
           //velocityLayer.removeAll();
           //chgSimBtn();
 
-          var simulation = {
+          simulation = {
             iteration: 0,
             buffer_size: getBuffSize(),
             segment_length: 500, // 100m
@@ -389,7 +389,7 @@ require([
 
             //disableSimButtons();
             //showToast("Simulación iniciada", "info");
-            updateSimulation(simulation);
+            updateSimulation();
           });
         } else {
           //showToast("Primero debe indicarse una ruta.", "error");
@@ -506,9 +506,10 @@ require([
     }
 
     // Actualiza el mapa durante la simulación
-    async function updateSimulation(simulation) {
+    function updateSimulation() {
       if (simulating) {
         // Si ya no tengo mas coordenadas termino
+        console.log("updateSimulation");
         if (simulation.iteration >= simulation.coordinates.length) {
           stopSimulation();
           return;
@@ -546,15 +547,15 @@ require([
           velocidad = 250;
         }
 
-        await sleep(velocidad);
+        //await sleep(velocidad);
      //   updateVelocityLine(simulation);
         simulation.step = 5;
         simulation.buffer_size = getBuffSize();
         simulation.iteration += simulation.step;
         simulation.travelled_length += simulation.segment_length * simulation.step;
         simulation.last_exec_time = performance.now();
-        updateSimulation(simulation);
-
+        
+        setTimeout(updateSimulation, velocidad);
       }
     }
 
@@ -660,7 +661,7 @@ require([
             });
             var countiesArray = [];
             queryPopulation(buffer,car, simulation)
-            updateLayersElements(car,buffer,simulation);
+            //updateLayersElements(car,buffer,simulation);
             /*Promise.all(countiesArray).then(result=>{
               updateLayersElements(car,buffer,simulation);
               result.forEach(countyInfo => {
@@ -729,14 +730,14 @@ require([
                 }
                 ));
             })
-            countiesLayer.removeAll();
+            //countiesLayer.removeAll();
             Promise.all(populationPromises)
               .then(result => {
                 var populationCalculated = 0;
                 //counties_list = "";
                 console.log("counties intersected: " + result.length);
                 //updateLayersElements(car,buffer,simulation);
-
+                var countiesArray = [];
                 result.forEach(countyInfo => {
                   populationCalculated += countyInfo.populationDetected;
                   trayectoryPopulation += countyInfo.populationDetected;
@@ -768,17 +769,20 @@ require([
                   }else{
                     populationGraphic = countyGraphicHighPopulation;
                   }
-                  countiesLayer.add(new Graphic({
+                  /*countiesLayer.add(new Graphic({
                     geometry: countyInfo.countyGeometry,
                     symbol: countyGraphic
-                  }));
-                  /*var countyGeometry= countyInfo.countyGeometry;
-                  return{
+                  }));*/
+                  console.log("entra countiesLayer.add")
+                  var countyGeometry= countyInfo.countyGeometry;
+                  countiesArray.push({countyGeometry,populationGraphic})
+                  /*return{
                     countyGeometry : countyGeometry,
                     populationGraphic : populationGraphic
                   };*/
                   //updateLayersElements(car,buffer,simulation,countyGraphic,countyGeometry);
                 });
+                updateLayersElements(car,buffer,simulation,countiesArray);
                 //_callback();
               });
 
@@ -864,9 +868,11 @@ require([
       }
     }
 
-    function updateLayersElements(car,buffer,simulation){
+    function updateLayersElements(car,buffer,simulation,countiesArray){
       //velocityLayer.removeAll();
       //countiesLayer.removeAll();
+      console.log("entra updateLayersElements");
+      console.log(countiesArray.length);
       carLayer.removeAll();
       countiesLayer.removeAll();
       /*countiesLayer.add(new Graphic({
@@ -877,12 +883,13 @@ require([
       carLayer.add(buffer);
       updateVelocityLine(simulation);
       
-      /*for ( i = 0; i< countiesArray.length; i++){
+      for ( i = 0; i< countiesArray.length; i++){
         countiesLayer.add(new Graphic({
           geometry: countiesArray[i].countyGeometry,
-          symbol: countiesArray[i].populationGraphic
+          //symbol: countiesArray[i].populationGraphic
+          symbol: countyGraphic
         }));
-      };*/
+      };
     }
 
   });
