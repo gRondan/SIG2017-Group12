@@ -136,7 +136,7 @@ require([
 
     getToken();
     prepareQueries();
-    loadRoutes();
+    //loadRoutes();
     //Capa Tiled pedida en letra de obligatorio
     tiled = new Tiled(mapURL);
 
@@ -149,7 +149,6 @@ require([
     initializeRouteVariables();
     setLayers();
 
-    // Se define el servicio para operaciones espaciales
     geometryService = new GeometryService({
       url: geometryServiceURL
     });
@@ -162,7 +161,6 @@ require([
       map: map
     });
 
-    //FUNCIONES AUXILIARES
 
     function getToken() {
       $.ajax({
@@ -176,18 +174,6 @@ require([
         async: false
       });
     }
-    /*function findAddress() {
-      $.ajax({
-        type: "POST",
-        url: tokenURL,
-        //data: data,
-        success: (response) => {
-          responseToken = response.access_token;
-        },
-        dataType: "json",
-        async: false
-      });
-    }*/
 
     function addPoint(point) {
 
@@ -206,8 +192,8 @@ require([
       return new Graphic({
         geometry: {
           type: "point",
-          x: lng,//longitude: lng,
-          y: lat,//latitude: lat,
+          x: lng,
+          y: lat,
           spatialReference: { wkid: 102100 }
         },
         symbol: carGraphic
@@ -218,8 +204,8 @@ require([
       return new Graphic({
         geometry: {
           type: "polygon",
-          x: lng,//longitude: lng,
-          y: lat,//latitude: lat,
+          x: lng,
+          y: lat,
           spatialReference: { wkid: 102100 }
         },
         symbol: visibilitySymbol
@@ -385,7 +371,7 @@ require([
         }
       }
 
-      document.getElementById("cargarRutas").onclick = function CargarRutas() {
+      /*document.getElementById("cargarRutas").onclick = function CargarRutas() {
 
         $.ajax({
           type: "POST",
@@ -411,19 +397,22 @@ require([
           console.log("error query savedRouteQueryTask: " + err);
         });
 
-      }
-      document.getElementById("accion pendiente").onclick = function CargarRutas() {
-        var url =
-          $.ajax({
-            type: "POST",
-            url: queryRoutesURL,
-            //data: data,
-            success: (response) => {
-              addressResult = response.features;
-            },
-            dataType: "json",
-            async: false
-          });
+      }*/
+      document.getElementById("loadRoute").onclick = function CargarRutas() {
+        //var selectedRoute = document.getElementById("address").value;
+        var selectedRoute = "Miami, Florida => New York";
+        selectedRoute = selectedRoute.replace(/ => /g, "_");
+        var url = queryRoutesURL + selectedRoute + queryRoutesURLEnd
+        $.ajax({
+          type: "POST",
+          url: url,
+          //data: data,
+          success: (response) => {
+            addressResult = response.features;
+          },
+          dataType: "json",
+          async: false
+        });
         console.log(addressResult);
 
       }
@@ -561,25 +550,23 @@ require([
     // Obtiene la ruta actual como una serie de puntos equidistantes
     function getDensify(simulation) {
       var path_promise;
-      /*if(mode == "service"){
-          var densifyParams = new DensifyParameters({
-              geometries: [current_route.geometry],
-              lengthUnit: "meters",
-              maxSegmentLength: simulation.segment_length,
-              geodesic: true
-          });
-          path_promise = geometrySvc.densify(densifyParams)
-          .then(data => {
-              return data[0].paths[0];
-          })
-          .catch(err => {
-              alert("Error al calcular los puntos de ruta");
-              console.log("Densify: ", err);
-          });
-      } else if(mode == "engine"){*/
-      path_promise = Promise.resolve(
+      var densifyParams = new DensifyParameters({
+        geometries: [current_route.geometry],
+        lengthUnit: "kilometers",
+        maxSegmentLength: simulation.segment_length,
+        geodesic: true
+      });
+      path_promise = geometryService.densify(densifyParams)
+        .then(data => {
+          return data[0].paths[0];
+        })
+        .catch(err => {
+          alert("Error al calcular los puntos de ruta");
+          console.log("Densify: ", err);
+        });
+      /*path_promise = Promise.resolve(
         geometryEngine.densify(current_route.geometry, simulation.segment_length, "kilometers").paths[0]
-      );
+      */
       //}
 
       return Promise.all([path_promise])
@@ -630,17 +617,11 @@ require([
       savedRoutesQuery.where = `notes = 'SigGroup12_Miami, Florida_Miami Beach, Florida'`;
     }
 
-
-
     function initializeRouteVariables() {
       RouteParameters = new RouteParameters({
         stops: new FeatureSet(),
         outSpatialReference: { wkid: 102100 }
       })
-      /*for (i = 0; i < points.length; i++) {
-        RouteParameters.stops.features.removeAll();
-        directionsArray.removeAll();
-      };*/
       RouteTask = new RouteTask({
         url: routeURL + responseToken
       })
@@ -686,7 +667,6 @@ require([
             name: feature.attributes.NAME,
             totalPopulation: feature.attributes.TOTPOP_CY,
             landArea: feature.attributes.LANDAREA,
-            //stAbbrev: feature.attributes.ST_ABBREV,
             graphic: new Graphic({
               geometry: feature.geometry,
               symbol: countyGraphic
@@ -697,11 +677,6 @@ require([
           if (result[0]) {
             var populationPromises = [];
             result[0].forEach(county => {
-              /*countiesLayer.add(new Graphic({
-                geometry: county.graphic.geometry,
-                symbol: countyGraphic
-              }));*/
-
               populationPromises.push(
                 calculatePopulation(county, buffer).then(intersectResult => {
                   var countyName = intersectResult.countyName;
@@ -712,31 +687,17 @@ require([
                 }
                 ));
             })
-            //countiesLayer.removeAll();
             Promise.all(populationPromises)
               .then(result => {
                 var populationCalculated = 0;
-                //counties_list = "";
                 console.log("counties intersected: " + result.length);
-                //updateLayersElements(car,buffer,simulation);
                 $('#infoSimu').empty();
-                var content = "<b>Condado : Pob en buffer / Pob Total: </b><br/>"; 
+                var content = "<b>Condado : Pob en buffer / Pob Total: </b><br/>";
                 var countiesArray = [];
                 result.forEach(countyInfo => {
                   populationCalculated += countyInfo.populationDetected;
                   trayectoryPopulation += countyInfo.populationDetected;
                   content += countyInfo.countyName + ": " + Math.round(countyInfo.populationDetected) + " / " + Math.round(countyInfo.totalCountyPopulation) + "<br/>";
-
-
-                  /* console.log("countyInfo.countyName: " + countyInfo.countyName);
-                  var populationGraphic;
-                  
-                  /*countiesLayer.add(new Graphic({
-                    geometry: countyInfo.countyGeometry,
-                    symbol: populationGraphic
-                  }));*/
-                  //console.log("countyInfo.countyName: " + countyInfo.countyName);
-                  //console.log("countyInfo.populationDetected: " + countyInfo.populationDetected);
                   populationCalculated += countyInfo.populationDetected;
                   if (countyInfo.populationDetected < 10000) {
                     populationGraphic = countyGraphicLowPopulation;
@@ -745,13 +706,12 @@ require([
                   } else {
                     populationGraphic = countyGraphicHighPopulation;
                   }
-                  console.log("entra countiesLayer.add")
                   var countyGeometry = countyInfo.countyGeometry;
                   countiesArray.push({ countyGeometry, populationGraphic })
                 });
                 content += "<b>Total población en buffer: </b>" + Math.round(populationCalculated) + " hábitantes <br/>" + "<b>Total población en trayectoria: </b>" + Math.round(trayectoryPopulation) + " hábitantes <br/>";
                 $(content).appendTo("#infoSimu");
-                updateLayersElements(car,buffer,simulation,countiesArray);
+                updateLayersElements(car, buffer, simulation, countiesArray);
                 simulation.step = getVelocity();
                 simulation.buffer_size = getBuffSize();
                 simulation.iteration += simulation.step;
@@ -837,7 +797,6 @@ require([
       }));
     }
 
-    // Retorna el valor del buffer ingresado
     function getBuffSize() {
       var val = $("#buffSize").val();
       if (val && parseInt(val) >= 1) {
@@ -848,24 +807,14 @@ require([
     }
 
     function updateLayersElements(car, buffer, simulation, countiesArray) {
-      //velocityLayer.removeAll();
-      //countiesLayer.removeAll();
-      console.log("entra updateLayersElements");
-      console.log(countiesArray.length);
       carLayer.removeAll();
       countiesLayer.removeAll();
-      /*countiesLayer.add(new Graphic({
-        geometry: countyGeometry,
-        symbol: populationGraphic
-      }));*/
       carLayer.add(car);
       carLayer.add(buffer);
       updateVelocityLine(simulation);
-
       for (i = 0; i < countiesArray.length; i++) {
         countiesLayer.add(new Graphic({
           geometry: countiesArray[i].countyGeometry,
-          //symbol: countiesArray[i].populationGraphic
           symbol: countyGraphic
         }));
       };
@@ -874,9 +823,9 @@ require([
       routeName = routeName.replace("SigGroup12_", "").replace(/_/g, " => ");
       $("gio es el mejor").appendTo("#list-Routes");
       console.log(routeName);
-     // console.log(name.replace("SigGroup12_", "").replace(/_/g, " => "));
+      // console.log(name.replace("SigGroup12_", "").replace(/_/g, " => "));
     }
-    function loadRoutes(){
+    function loadRoutes() {
       $.ajax({
         type: "POST",
         url: queryAllRoutesURL,
