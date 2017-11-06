@@ -398,7 +398,7 @@ require([
 
             //disableSimButtons();
             //showToast("Simulación iniciada", "info");
-            updateSimulation();
+            updateSimulation(simulation);
           });
         } else {
           //showToast("Primero debe indicarse una ruta.", "error");
@@ -593,7 +593,7 @@ require([
     }
 
     // Actualiza el mapa durante la simulación
-    function updateSimulation() {
+    function updateSimulation(simulation) {
       if (simulating) {
         // Si ya no tengo mas coordenadas termino
         console.log("updateSimulation");
@@ -612,7 +612,7 @@ require([
         var car = createCarGraphyc(next_coordinate[0], next_coordinate[1]);
         //carLayer.removeAll();
         //carLayer.add(car);
-        createBuffer(car, simulation);
+        //createBuffer(car, simulation);
         //var visibilityGraphic = createVisibilityGraphyc(next_coordinate[0], next_coordinate[1]);
         /*
         visibilityLayer.removeAll();
@@ -636,13 +636,14 @@ require([
 
         //await sleep(velocidad);
      //   updateVelocityLine(simulation);
-        simulation.step = 5;
+        /*simulation.step = 5;
         simulation.buffer_size = getBuffSize();
         simulation.iteration += simulation.step;
         simulation.travelled_length += simulation.segment_length * simulation.step;
-        simulation.last_exec_time = performance.now();
-        
-        setTimeout(updateSimulation, velocidad);
+        simulation.last_exec_time = performance.now();*/
+        createBuffer(car, simulation)
+        //updateSimulation(simulation);
+        //setTimeout(updateSimulation, velocidad);
       }
     }
 
@@ -878,7 +879,12 @@ require([
                   //updateLayersElements(car,buffer,simulation,countyGraphic,countyGeometry);
                 });
                 updateLayersElements(car,buffer,simulation,countiesArray);
-                //_callback();
+                simulation.step = 5;
+                simulation.buffer_size = getBuffSize();
+                simulation.iteration += simulation.step;
+                simulation.travelled_length += simulation.segment_length * simulation.step;
+                simulation.last_exec_time = performance.now();
+                updateSimulation(simulation);
               });
 
 
