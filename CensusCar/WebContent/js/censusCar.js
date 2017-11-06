@@ -833,16 +833,13 @@ require([
                 //counties_list = "";
                 console.log("counties intersected: " + result.length);
                 //updateLayersElements(car,buffer,simulation);
+                $('#infoSimu').empty();
+                var content = "<b>Condado : Pob en buffer / Pob Total: </b><br/>"; 
                 var countiesArray = [];
                 result.forEach(countyInfo => {
                   populationCalculated += countyInfo.populationDetected;
                   trayectoryPopulation += countyInfo.populationDetected;
-                  $('#infoSimu').empty();
-                  $("<b> Estado: </b>" + countyInfo.countyName + "<br/>"
-                    + "<b>Condado : Pob en buffer / Pob Total: </b><br/>"
-                    + countyInfo.countyName + ": " + Math.round(countyInfo.populationDetected) + " / " + Math.round(countyInfo.totalCountyPopulation) + "<br/>"
-                    + "<b>Total población en buffer: </b>" + Math.round(populationCalculated) + " hábitantes <br/>"
-                    + "<b>Total población en trayectoria: </b>" + Math.round(trayectoryPopulation) + " hábitantes <br/>").appendTo("#infoSimu");
+                  content += countyInfo.countyName + ": " + Math.round(countyInfo.populationDetected) + " / " + Math.round(countyInfo.totalCountyPopulation) + "<br/>";
 
 
                   /* console.log("countyInfo.countyName: " + countyInfo.countyName);
@@ -878,6 +875,8 @@ require([
                   };*/
                   //updateLayersElements(car,buffer,simulation,countyGraphic,countyGeometry);
                 });
+                content += "<b>Total población en buffer: </b>" + Math.round(populationCalculated) + " hábitantes <br/>" + "<b>Total población en trayectoria: </b>" + Math.round(trayectoryPopulation) + " hábitantes <br/>";
+                $(content).appendTo("#infoSimu");
                 updateLayersElements(car,buffer,simulation,countiesArray);
                 simulation.step = getVelocity();
                 simulation.buffer_size = getBuffSize();
