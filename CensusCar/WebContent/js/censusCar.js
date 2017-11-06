@@ -719,16 +719,24 @@ require([
                 //counties_list = "";
                 console.log("counties intersected: " + result.length);
                 //updateLayersElements(car,buffer,simulation);
+                $('#infoSimu').empty();
+                var content = "<b>Condado : Pob en buffer / Pob Total: </b><br/>"; 
                 var countiesArray = [];
                 result.forEach(countyInfo => {
                   populationCalculated += countyInfo.populationDetected;
                   trayectoryPopulation += countyInfo.populationDetected;
-                  $('#infoSimu').empty();
-                  $("<b> Estado: </b>" + countyInfo.countyName + "<br/>"
-                    + "<b>Condado : Pob en buffer / Pob Total: </b><br/>"
-                    + countyInfo.countyName + ": " + Math.round(countyInfo.populationDetected) + " / " + Math.round(countyInfo.totalCountyPopulation) + "<br/>"
-                    + "<b>Total población en buffer: </b>" + Math.round(populationCalculated) + " hábitantes <br/>"
-                    + "<b>Total población en trayectoria: </b>" + Math.round(trayectoryPopulation) + " hábitantes <br/>").appendTo("#infoSimu");
+                  content += countyInfo.countyName + ": " + Math.round(countyInfo.populationDetected) + " / " + Math.round(countyInfo.totalCountyPopulation) + "<br/>";
+
+
+                  /* console.log("countyInfo.countyName: " + countyInfo.countyName);
+                  var populationGraphic;
+                  
+                  /*countiesLayer.add(new Graphic({
+                    geometry: countyInfo.countyGeometry,
+                    symbol: populationGraphic
+                  }));*/
+                  //console.log("countyInfo.countyName: " + countyInfo.countyName);
+                  //console.log("countyInfo.populationDetected: " + countyInfo.populationDetected);
                   populationCalculated += countyInfo.populationDetected;
                   if (countyInfo.populationDetected < 10000) {
                     populationGraphic = countyGraphicLowPopulation;
@@ -741,8 +749,10 @@ require([
                   var countyGeometry = countyInfo.countyGeometry;
                   countiesArray.push({ countyGeometry, populationGraphic })
                 });
-                updateLayersElements(car, buffer, simulation, countiesArray);
-                simulation.step = 5;
+                content += "<b>Total población en buffer: </b>" + Math.round(populationCalculated) + " hábitantes <br/>" + "<b>Total población en trayectoria: </b>" + Math.round(trayectoryPopulation) + " hábitantes <br/>";
+                $(content).appendTo("#infoSimu");
+                updateLayersElements(car,buffer,simulation,countiesArray);
+                simulation.step = getVelocity();
                 simulation.buffer_size = getBuffSize();
                 simulation.iteration += simulation.step;
                 simulation.travelled_length += simulation.segment_length * simulation.step;
@@ -753,6 +763,20 @@ require([
         });
       })
 
+    }
+
+    function getVelocity() {
+      var step;
+      if ($('#vbaja')[0].checked) {
+        step = 5;
+      } else if ($('#vmedia')[0].checked) {
+        step = 15;
+      } else if ($('#valta')[0].checked) {
+        step = 30;
+      } else if ($('#vmuyalta')[0].checked) {
+        step = 50;
+      }
+      return step;
     }
 
     function calculatePopulation(county, buffer) {
