@@ -75,3 +75,12 @@ function eliminarPto(id){
   $(document).ready(function() {
     $('#infoList').prop('hidden',true);
 });
+
+function addRouteToList(allRoutes){
+    $('#list-Routes').empty();
+    var j = 0;
+    while (j < allRoutes.length){
+      $("<div class=" + "list-items"+" id=" + "elem_" + j + ">"+ j + " " + allRoutes[j].attributes.notes.replace("SigGroup12_", "").replace(/_/g, " => ") + "</div>").appendTo( "#list-Routes" );
+      j++;
+    }
+  }

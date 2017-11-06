@@ -136,7 +136,7 @@ require([
 
     getToken();
     prepareQueries();
-    //loadRoutes();
+    loadRoutes();
     //Capa Tiled pedida en letra de obligatorio
     tiled = new Tiled(mapURL);
 
@@ -820,12 +820,14 @@ require([
         }));
       };
     }
-    function addRouteToList(routeName) {
+
+    /* function addRouteToList(routeName) {
       routeName = routeName.replace("SigGroup12_", "").replace(/_/g, " => ");
       $("gio es el mejor").appendTo("#list-Routes");
       console.log(routeName);
       // console.log(name.replace("SigGroup12_", "").replace(/_/g, " => "));
-    }
+    } */
+
     function loadRoutes() {
       $.ajax({
         type: "POST",
@@ -841,8 +843,8 @@ require([
       $('#list-Routes').empty();
       $("<b> Estado: </b>").appendTo("#list-Routes");
       for (i = 0; i < allRoutesResult.length; i++) {
-        var name = allRoutesResult[i].attributes.notes;
-        addRouteToList(name);
+        //var name = allRoutesResult[i].attributes.notes;
+        addRouteToList(allRoutesResult);
       }
     }
   });

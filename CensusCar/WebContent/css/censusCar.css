@@ -50,7 +50,8 @@ body {
 
 .listaRutas{
     display: block;
-	min-width: 32%;
+    min-width: 32%;
+    max-height: 250px;
     z-index: 2;
     position: fixed; 
     bottom: 6%; 
