@@ -16,6 +16,8 @@ var exportPDFURL = "http://sampleserver5.arcgisonline.com/arcgis/rest/services/U
 var CountiesLayerURL = "http://services.arcgisonline.com/arcgis/rest/services/Demographics/USA_1990-2000_Population_Change/MapServer/3"
 var geometryService
 var geometryServiceURL = "https://sampleserver6.arcgisonline.com/arcgis/rest/services/Utilities/Geometry/GeometryServer"
+var queryRoutesURL = "https://sampleserver5.arcgisonline.com/arcgis/rest/services/LocalGovernment/Recreation/FeatureServer/1/query?f=json&where=notes%20%3D%20%27SigGroup12%27&returnGeometry=true&spatialRel=esriSpatialRelIntersects&outSR=102100"
+var queryAllRoutesURL = "https://sampleserver5.arcgisonline.com/arcgis/rest/services/LocalGovernment/Recreation/FeatureServer/1/query?f=json&where=notes%20LIKE%20%27SigGroup12%25%27&returnGeometry=true&spatialRel=esriSpatialRelIntersects&outSR=102100"
 var points = []
 var directionsArray = []
 var simulating = false;
@@ -282,12 +284,15 @@ require([
             */
           carLayer.removeAll();
           routesLayer.removeAll();
-
+          routeName = "SigGroup12";
           RouteParameters.stops.features = [];
           for (i = 0; i < points.length; i++) {
             RouteParameters.stops.features.push(points[i].graphic);
             directionsArray.push(points[i].graphic);
+            routeName += "_";
+            routeName += points[i].name;
           };
+          console.log(routeName);
           /*RouteTask = new RouteTask({
             url: routeURL + responseToken
           })*/
@@ -308,21 +313,22 @@ require([
               var routeGraphic = new Graphic();
               routeGraphic.geometry = current_route.geometry;
               routeGraphic.attributes = {
-                name: `SigGroup12_${points[0].name}_${points[points.length - 1].name}`,
-                trailtype: 4
+                //name: `SigGroup12_${points[0].name}_${points[points.length - 1].name}`,
+                trailtype: 4,
+                notes: routeName
               };
               routesFeatureLayer.applyEdits({
                 addFeatures: [routeGraphic]
               }).then(() => {
                 console.log("Save routes ok ");
                 console.log(routeGraphic);
-                /*routeQueryTask.execute(routeQuery).then(function (results) {
+                routeQueryTask.execute(routeQuery).then(function (results) {
                   console.log("routeQueryTask execute ok");
                   console.log(results.features);
                 })
                   .catch(err => {
                     console.log("error query: " + err);
-                  });*/
+                  });
               })
                 .catch(err => {
                   console.log("error: " + err);
@@ -348,7 +354,7 @@ require([
             })
           directionsQueryTask.execute(directionsQuery).then(function (results) {
             console.log("directionsQueryTask execute ok");
-            console.log(results.features);
+            console.log(results);
           })
             .catch(err => {
               console.log("error query: " + err);
@@ -424,10 +430,52 @@ require([
             .catch(err => {
               console.log("Load Route: ", err);
             }); */
-
-            savedRouteQueryTask.execute(savedRoutesQuery).then(results=> {
+            /*var query = new Query();
+            //query.where = `notes = 'sig_grupo7_${name}'`;
+            query.returnGeometry = true;
+            query.outSpatialReference = { wkid: 102100 };
+            routesFeatureLayer.queryFeatures(query)
+            .then(featureSet =>{
+                var routeResult = {
+                    geometry: featureSet.features[0].geometry,
+                    symbol: routeSymbol
+                };
+                routeLyr.removeAll();
+                routeLyr.add(routeResult);
+    
+                current_route = routeResult;
+                enableRouteButtons();
+                showToast("Ruta cargada con éxito", "info");
+            })
+            .catch (err => {
+                console.log("Load Route: ", err);
+                //showToast(`Error al cargar la ruta ${name}`, "error");
+            })*/
+            $.ajax({
+              type: "POST",
+              url: queryRoutesURL,
+              //data: data,
+              success: (response) => {
+                addressResult = response.features;
+              },
+              dataType: "json",
+              async: false
+            });
+            console.log(addressResult);
+            $.ajax({
+              type: "POST",
+              url: queryAllRoutesURL,
+              //data: data,
+              success: (response) => {
+                allRoutesResult = response.features;
+              },
+              dataType: "json",
+              async: false
+            });
+            console.log(allRoutesResult);
+            savedRouteQueryTask.execute(savedRoutesQuery).then(function(results){
               console.log("savedRouteQueryTask execute ok");
-              console.log(results.features);
+              console.log(results);
             })
               .catch(err => {
                 console.log("error query savedRouteQueryTask: " + err);
@@ -647,12 +695,12 @@ require([
       directionsQuery.where = "event_type = '17'";
 
       routeQueryTask = new QueryTask({
-        url: routesFeatureLayerURL
+        url: routesFeatureLayerURL+responseToken
       });
       routeQuery = new Query();
       routeQuery.returnGeometry = true;
       routeQuery.outFields = ["*"];
-      routeQuery.where = `name = 'routeGraphic'`;
+      //routeQuery.where = `name = 'routeGraphic'`;
 
       countiesQueryTask = new QueryTask({
         url: CountiesLayerURL
@@ -667,7 +715,8 @@ require([
       });
       savedRoutesQuery = new Query();
       savedRoutesQuery.returnGeometry = true;
-      savedRoutesQuery.outFields = ["*"];
+      savedRoutesQuery.outFields = ["notes"];
+      savedRoutesQuery.where = `notes LIKE 'SigGroup12%'`;
     }
     function addAddressToList(point) {
 
