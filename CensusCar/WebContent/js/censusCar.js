@@ -879,7 +879,7 @@ require([
                   //updateLayersElements(car,buffer,simulation,countyGraphic,countyGeometry);
                 });
                 updateLayersElements(car,buffer,simulation,countiesArray);
-                simulation.step = 5;
+                simulation.step = getVelocity();
                 simulation.buffer_size = getBuffSize();
                 simulation.iteration += simulation.step;
                 simulation.travelled_length += simulation.segment_length * simulation.step;
@@ -895,6 +895,20 @@ require([
         //return countiesArray;
       })
       
+    }
+
+    function getVelocity() {
+      var step;
+      if ($('#vbaja')[0].checked) {
+        step = 5;
+      } else if ($('#vmedia')[0].checked) {
+        step = 15;
+      } else if ($('#valta')[0].checked) {
+        step = 30;
+      } else if ($('#vmuyalta')[0].checked) {
+        step = 50;
+      }
+      return step;
     }
 
     function calculatePopulation(county, buffer) {
