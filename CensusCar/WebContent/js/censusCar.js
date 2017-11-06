@@ -16,8 +16,10 @@ var exportPDFURL = "http://sampleserver5.arcgisonline.com/arcgis/rest/services/U
 var CountiesLayerURL = "http://services.arcgisonline.com/arcgis/rest/services/Demographics/USA_1990-2000_Population_Change/MapServer/3"
 var geometryService
 var geometryServiceURL = "https://sampleserver6.arcgisonline.com/arcgis/rest/services/Utilities/Geometry/GeometryServer"
-var queryRoutesURL = "https://sampleserver5.arcgisonline.com/arcgis/rest/services/LocalGovernment/Recreation/FeatureServer/1/query?f=json&where=notes%20%3D%20%27SigGroup12%27&returnGeometry=true&spatialRel=esriSpatialRelIntersects&outSR=102100"
+var queryRoutesURL = "https://sampleserver5.arcgisonline.com/arcgis/rest/services/LocalGovernment/Recreation/FeatureServer/1/query?f=json&where=notes%20%3D%20%27SigGroup12_"
 var queryAllRoutesURL = "https://sampleserver5.arcgisonline.com/arcgis/rest/services/LocalGovernment/Recreation/FeatureServer/1/query?f=json&where=notes%20LIKE%20%27SigGroup12%25%27&returnGeometry=true&spatialRel=esriSpatialRelIntersects&outSR=102100"
+var queryRoutesURLEnd = "%27&returnGeometry=true&spatialRel=esriSpatialRelIntersects&outSR=102100"
+var queryRoutesURLHardcode = "Miami%2C%20Florida_Miami%20Beach%2C%20Florida"
 var points = []
 var directionsArray = []
 var simulating = false;
@@ -134,7 +136,7 @@ require([
 
     getToken();
     prepareQueries();
-
+    loadRoutes();
     //Capa Tiled pedida en letra de obligatorio
     tiled = new Tiled(mapURL);
 
@@ -305,6 +307,7 @@ require([
                 addFeatures: [routeGraphic]
               }).then(() => {
                 console.log("Save routes ok ");
+                addRouteToList(routeName);
                 console.log(routeGraphic);
                 routeQueryTask.execute(routeQuery).then(function (results) {
                   console.log("routeQueryTask execute ok");
@@ -394,12 +397,12 @@ require([
           dataType: "json",
           async: false
         });
-        console.log("allRoutesResult: "+allRoutesResult);
-        for(i = 0; i < allRoutesResult.length; i++){
-          var name =allRoutesResult[i].attributes.notes;
+        console.log("allRoutesResult: " + allRoutesResult);
+        for (i = 0; i < allRoutesResult.length; i++) {
+          var name = allRoutesResult[i].attributes.notes;
           console.log(name);
-          console.log(name.replace("SigGroup12_","").replace(/_/g ," => "));
-          
+          console.log(name.replace("SigGroup12_", "").replace(/_/g, " => "));
+
         }
         savedRouteQueryTask.execute(savedRoutesQuery).then(function (results) {
           console.log("savedRouteQueryTask execute ok");
@@ -410,17 +413,19 @@ require([
 
       }
       document.getElementById("accion pendiente").onclick = function CargarRutas() {
-        $.ajax({
-          type: "POST",
-          url: queryRoutesURL,
-          //data: data,
-          success: (response) => {
-            addressResult = response.features;
-          },
-          dataType: "json",
-          async: false
-        });
+        var url =
+          $.ajax({
+            type: "POST",
+            url: queryRoutesURL,
+            //data: data,
+            success: (response) => {
+              addressResult = response.features;
+            },
+            dataType: "json",
+            async: false
+          });
         console.log(addressResult);
+
       }
 
 
@@ -622,10 +627,10 @@ require([
       savedRoutesQuery = new Query();
       savedRoutesQuery.returnGeometry = true;
       savedRoutesQuery.outFields = ["notes"];
-      savedRoutesQuery.where = `notes LIKE 'SigGroup12%'`;
+      savedRoutesQuery.where = `notes = 'SigGroup12_Miami, Florida_Miami Beach, Florida'`;
     }
 
-    
+
 
     function initializeRouteVariables() {
       RouteParameters = new RouteParameters({
@@ -841,5 +846,29 @@ require([
         }));
       };
     }
-
+    function addRouteToList(routeName) {
+      routeName = routeName.replace("SigGroup12_", "").replace(/_/g, " => ");
+      $("gio es el mejor").appendTo("#list-Routes");
+      console.log(routeName);
+     // console.log(name.replace("SigGroup12_", "").replace(/_/g, " => "));
+    }
+    function loadRoutes(){
+      $.ajax({
+        type: "POST",
+        url: queryAllRoutesURL,
+        //data: data,
+        success: (response) => {
+          allRoutesResult = response.features;
+        },
+        dataType: "json",
+        async: false
+      });
+      console.log("allRoutesResult: " + allRoutesResult);
+      $('#list-Routes').empty();
+      $("<b> Estado: </b>").appendTo("#list-Routes");
+      for (i = 0; i < allRoutesResult.length; i++) {
+        var name = allRoutesResult[i].attributes.notes;
+        addRouteToList(name);
+      }
+    }
   });
