@@ -136,7 +136,7 @@ require([
 
     getToken();
     prepareQueries();
-    //loadRoutes();
+    loadRoutes();
     //Capa Tiled pedida en letra de obligatorio
     tiled = new Tiled(mapURL);
 
@@ -823,7 +823,7 @@ require([
     function addRouteToList(routeName) {
       routeName = routeName.replace("SigGroup12_", "").replace(/_/g, " => ");
       $("gio es el mejor").appendTo("#list-Routes");
-      console.log(routeName);
+     //console.log("routeName: "+routeName);
       // console.log(name.replace("SigGroup12_", "").replace(/_/g, " => "));
     }
     function loadRoutes() {
@@ -837,12 +837,24 @@ require([
         dataType: "json",
         async: false
       });
-      console.log("allRoutesResult: " + allRoutesResult);
+      //console.log("allRoutesResult: " + allRoutesResult);
       $('#list-Routes').empty();
       $("<b> Estado: </b>").appendTo("#list-Routes");
+      var routesArray = [];
       for (i = 0; i < allRoutesResult.length; i++) {
         var name = allRoutesResult[i].attributes.notes;
-        addRouteToList(name);
+        //console.log("name: "+name);
+        var repetido = false;
+        for (j = 0; j < routesArray.length; j++){
+          if (name.localeCompare(routesArray[j]) == 0){
+            repetido = true;
+            break;
+          }
+        } 
+        if(!repetido){
+          routesArray.push(name);
+          addRouteToList(name);
+        }
       }
     }
   });
