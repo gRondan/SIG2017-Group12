@@ -251,6 +251,7 @@ require([
             })
           };
           addPoint(point);
+          updatePointsList();
         } else {
           alert("No se ha encontrado la dirección " + selectedDirection);
         }
