@@ -197,9 +197,6 @@ require([
       points.push(point);
 
       saveDirection();
-
-      // Cambios en View
-      updatePointsList();
     }
 
     // Crea el marcador del móvil
@@ -266,7 +263,6 @@ require([
             })
           };
           addPoint(point);
-          addAddressToList(point);
         } else {
           alert("No se ha encontrado la dirección " + selectedDirection);
         }
@@ -274,14 +270,8 @@ require([
 
       };
       document.getElementById("findRoute").onclick = function findRoute() {
+        velocityLayer.removeAll();
         if (points.length >= 2) {
-          // clearLayers();
-          /*
-                    RouteParameters = new RouteParameters({
-                      stops: new FeatureSet(),
-                      outSpatialReference: { wkid: 102100 }
-                    })
-            */
           carLayer.removeAll();
           routesLayer.removeAll();
           routeName = "SigGroup12";
@@ -293,12 +283,6 @@ require([
             routeName += points[i].name;
           };
           console.log(routeName);
-          /*RouteTask = new RouteTask({
-            url: routeURL + responseToken
-          })*/
-
-          //points = [];
-          //points.length = 0;
           var RouteResoults = RouteTask.solve(RouteParameters)
             .then((data) => {
               var routeResult = data.routeResults[0].route;
@@ -332,14 +316,9 @@ require([
               })
                 .catch(err => {
                   console.log("error: " + err);
-
                 });
-
             }).catch(err => {
               console.log("error: " + err);
-
-
-
             })
 
           directionsFeatureLayer.applyEdits({
@@ -368,18 +347,15 @@ require([
         $('#infoList').prop('hidden', true);
       }
       document.getElementById("playSimulation").onclick = function startSimulation() {
+        velocityLayer.removeAll();
         if (current_route) {
           if (simulating) {
-            //showToast("Hay una simulación en curso.", "error");
             return;
           }
           $('#ptosList').prop('hidden', true);
           $('#infoList').prop('hidden', false);
           trayectoryPopulation = 0;
           simulating = true;
-          //velocityLayer.removeAll();
-          //chgSimBtn();
-
           simulation = {
             iteration: 0,
             buffer_size: getBuffSize(),
@@ -407,79 +383,44 @@ require([
       }
 
       document.getElementById("cargarRutas").onclick = function CargarRutas() {
-        
 
-          /* var query = new Query();
-          query.where = `name = 'sig_grupo7_${name}'`;
-          query.returnGeometry = true;
-          query.outSpatialReference = { wkid: 102100 }; */
-          /* savedRoutesQuery = new Query();
-          savedRoutesQuery.returnGeometry = true;
-          savedRoutesQuery.outSpatialReference = { wkid: 102100 };
-          savedRoutesQuery.outFields = ["*"]; */
-          //savedRoutesQuery.where = `name = 'SigGroup12_'`;
+        $.ajax({
+          type: "POST",
+          url: queryAllRoutesURL,
+          //data: data,
+          success: (response) => {
+            allRoutesResult = response.features;
+          },
+          dataType: "json",
+          async: false
+        });
+        console.log("allRoutesResult: "+allRoutesResult);
+        for(i = 0; i < allRoutesResult.length; i++){
+          var name =allRoutesResult[i].attributes.notes;
+          console.log(name);
+          console.log(name.replace("SigGroup12_","").replace(/_/g ," => "));
+          
+        }
+        savedRouteQueryTask.execute(savedRoutesQuery).then(function (results) {
+          console.log("savedRouteQueryTask execute ok");
+          console.log(results);
+        }).catch(err => {
+          console.log("error query savedRouteQueryTask: " + err);
+        });
 
-          /* routesFeatureLayer.queryFeatures(savedRoutesQuery)
-            .then(featureSet => {
-              var routeResult = {
-                geometry: featureSet.features[0].geometry,
-                symbol: routeSymbol
-              };
-              console.log(routeResult);
-            })
-            .catch(err => {
-              console.log("Load Route: ", err);
-            }); */
-            /*var query = new Query();
-            //query.where = `notes = 'sig_grupo7_${name}'`;
-            query.returnGeometry = true;
-            query.outSpatialReference = { wkid: 102100 };
-            routesFeatureLayer.queryFeatures(query)
-            .then(featureSet =>{
-                var routeResult = {
-                    geometry: featureSet.features[0].geometry,
-                    symbol: routeSymbol
-                };
-                routeLyr.removeAll();
-                routeLyr.add(routeResult);
-    
-                current_route = routeResult;
-                enableRouteButtons();
-                showToast("Ruta cargada con éxito", "info");
-            })
-            .catch (err => {
-                console.log("Load Route: ", err);
-                //showToast(`Error al cargar la ruta ${name}`, "error");
-            })*/
-            $.ajax({
-              type: "POST",
-              url: queryRoutesURL,
-              //data: data,
-              success: (response) => {
-                addressResult = response.features;
-              },
-              dataType: "json",
-              async: false
-            });
-            console.log(addressResult);
-            $.ajax({
-              type: "POST",
-              url: queryAllRoutesURL,
-              //data: data,
-              success: (response) => {
-                allRoutesResult = response.features;
-              },
-              dataType: "json",
-              async: false
-            });
-            console.log(allRoutesResult);
-            savedRouteQueryTask.execute(savedRoutesQuery).then(function(results){
-              console.log("savedRouteQueryTask execute ok");
-              console.log(results);
-            })
-              .catch(err => {
-                console.log("error query savedRouteQueryTask: " + err);
-              });
+      }
+      document.getElementById("accion pendiente").onclick = function CargarRutas() {
+        $.ajax({
+          type: "POST",
+          url: queryRoutesURL,
+          //data: data,
+          success: (response) => {
+            addressResult = response.features;
+          },
+          dataType: "json",
+          async: false
+        });
+        console.log(addressResult);
       }
 
 
@@ -558,13 +499,6 @@ require([
         visible: false
       });
       map.layers.add(routesFeatureLayer);
-
-      /* countiesLayer = new FeatureLayer({
-         url: CountiesLayerURL,
-         visible: true
-       });
- 
-       map.layers.add(countiesLayer);*/
     }
 
     function saveDirection() {
@@ -583,12 +517,6 @@ require([
       if (simulating) {
         carLayer.removeAll();
         simulating = false;
-
-        //chgSimBtn();
-        //enableSimButtons();
-        //showToast("Simulación finalizada!", "info");
-      } else {
-        //showToast("No hay una simulación en curso", "error");
       }
     }
 
@@ -610,19 +538,6 @@ require([
         // Busca la coordenada, crea el marcador.
         var next_coordinate = simulation.coordinates[simulation.iteration];
         var car = createCarGraphyc(next_coordinate[0], next_coordinate[1]);
-        //carLayer.removeAll();
-        //carLayer.add(car);
-        //createBuffer(car, simulation);
-        //var visibilityGraphic = createVisibilityGraphyc(next_coordinate[0], next_coordinate[1]);
-        /*
-        visibilityLayer.removeAll();
-        visibilityLayer.add(visibilityGraphic);*/
-        /* simulation.step = 5;
-        simulation.buffer_size = 1; */
-
-        /* simulation.iteration += simulation.step;
-        simulation.travelled_length += simulation.segment_length * simulation.step;
-        simulation.last_exec_time = performance.now(); */
         var velocidad;
         if ($('#vbaja')[0].checked) {
           velocidad = 6000;
@@ -633,17 +548,7 @@ require([
         } else if ($('#vmuyalta')[0].checked) {
           velocidad = 250;
         }
-
-        //await sleep(velocidad);
-     //   updateVelocityLine(simulation);
-        /*simulation.step = 5;
-        simulation.buffer_size = getBuffSize();
-        simulation.iteration += simulation.step;
-        simulation.travelled_length += simulation.segment_length * simulation.step;
-        simulation.last_exec_time = performance.now();*/
         createBuffer(car, simulation)
-        //updateSimulation(simulation);
-        //setTimeout(updateSimulation, velocidad);
       }
     }
 
@@ -696,7 +601,7 @@ require([
       directionsQuery.where = "event_type = '17'";
 
       routeQueryTask = new QueryTask({
-        url: routesFeatureLayerURL+responseToken
+        url: routesFeatureLayerURL + responseToken
       });
       routeQuery = new Query();
       routeQuery.returnGeometry = true;
@@ -719,13 +624,8 @@ require([
       savedRoutesQuery.outFields = ["notes"];
       savedRoutesQuery.where = `notes LIKE 'SigGroup12%'`;
     }
-    function addAddressToList(point) {
 
-    }
-
-    function clearAddressList() {
-
-    }
+    
 
     function initializeRouteVariables() {
       RouteParameters = new RouteParameters({
@@ -756,26 +656,7 @@ require([
               symbol: visibilitySymbol
             });
             var countiesArray = [];
-            queryPopulation(buffer,car, simulation)
-            //updateLayersElements(car,buffer,simulation);
-            /*Promise.all(countiesArray).then(result=>{
-              updateLayersElements(car,buffer,simulation);
-              result.forEach(countyInfo => {
-                //for ( i = 0; i< countiesArray.length; i++){
-                  countiesLayer.add(new Graphic({
-                    geometry: countiesArray[i].countyGeometry,
-                    symbol: countiesArray[i].populationGraphic
-                  }));
-                //};
-              })
-            })*/
-            
-            
-            
-            //carLayer.add(buffer);
-            //countiesLayer.removeAll();
-            //queryPopulation(buffer,car, simulation);
-            //carLayer.add(buffer);
+            queryPopulation(buffer, car, simulation)
           })
             .catch(err => {
               console.log("createBuffer promise: ", err)
@@ -785,7 +666,7 @@ require([
           console.log("createBuffer geometryService: ", err)
         });
     }
-    function queryPopulation(buffer, car, simulation,_callback) {
+    function queryPopulation(buffer, car, simulation, _callback) {
       var countyQuery = new Query();
       countyQuery.geometry = buffer.geometry;
       countyQuery.spatialRelationship = "intersects";
@@ -843,42 +724,19 @@ require([
                     + countyInfo.countyName + ": " + Math.round(countyInfo.populationDetected) + " / " + Math.round(countyInfo.totalCountyPopulation) + "<br/>"
                     + "<b>Total población en buffer: </b>" + Math.round(populationCalculated) + " hábitantes <br/>"
                     + "<b>Total población en trayectoria: </b>" + Math.round(trayectoryPopulation) + " hábitantes <br/>").appendTo("#infoSimu");
-
-
-                  /* console.log("countyInfo.countyName: " + countyInfo.countyName);
-                  var populationGraphic;
-                  
-                  /*countiesLayer.add(new Graphic({
-                    geometry: countyInfo.countyGeometry,
-                    symbol: populationGraphic
-                  }));*/
-                  //console.log("countyInfo.countyName: " + countyInfo.countyName);
-                  //console.log("countyInfo.populationDetected: " + countyInfo.populationDetected);
                   populationCalculated += countyInfo.populationDetected;
-                  //totalCountyPopulation += countyInfo.county_population;
-                  //console.log("populationCalculated: " + populationCalculated);
-                  // countiesList += result.list_item;
-                  if (countyInfo.populationDetected < 10000){
+                  if (countyInfo.populationDetected < 10000) {
                     populationGraphic = countyGraphicLowPopulation;
-                  }else if (countyInfo.populationDetected < 30000){
+                  } else if (countyInfo.populationDetected < 30000) {
                     populationGraphic = countyGraphicMediumPopulation;
-                  }else{
+                  } else {
                     populationGraphic = countyGraphicHighPopulation;
                   }
-                  /*countiesLayer.add(new Graphic({
-                    geometry: countyInfo.countyGeometry,
-                    symbol: countyGraphic
-                  }));*/
                   console.log("entra countiesLayer.add")
-                  var countyGeometry= countyInfo.countyGeometry;
-                  countiesArray.push({countyGeometry,populationGraphic})
-                  /*return{
-                    countyGeometry : countyGeometry,
-                    populationGraphic : populationGraphic
-                  };*/
-                  //updateLayersElements(car,buffer,simulation,countyGraphic,countyGeometry);
+                  var countyGeometry = countyInfo.countyGeometry;
+                  countiesArray.push({ countyGeometry, populationGraphic })
                 });
-                updateLayersElements(car,buffer,simulation,countiesArray);
+                updateLayersElements(car, buffer, simulation, countiesArray);
                 simulation.step = 5;
                 simulation.buffer_size = getBuffSize();
                 simulation.iteration += simulation.step;
@@ -886,15 +744,10 @@ require([
                 simulation.last_exec_time = performance.now();
                 updateSimulation(simulation);
               });
-
-
           }
         });
-
-        //console.log("countiesArray.length: "+countiesArray.length());
-        //return countiesArray;
       })
-      
+
     }
 
     function calculatePopulation(county, buffer) {
@@ -905,8 +758,6 @@ require([
         areasAndLengthsParameters.lengthUnit = "kilometers";
         areasAndLengthsParameters.calculationType = "preserve-shape";
         return geometryService.areasAndLengths(areasAndLengthsParameters).then(areaResult => {
-          // console.log("areaResult: " + areaResult)
-          // console.log("areaResult.areas[0]: " + areaResult.areas[0])
           return areaResult.areas[0];
         }).catch(err => {
           console.log("areasAndLengths err: " + err);
@@ -921,8 +772,6 @@ require([
         var countyName = county.name;
         var countyGeometry = county.graphic.geometry;
         var totalCountyPopulation = county.totalPopulation;
-        //console.log("county.name: " + county.name);
-        //console.log("populationDetected: " + populationDetected);
         return { countyName, populationDetected, countyGeometry, totalCountyPopulation };
       })
     }
@@ -969,7 +818,7 @@ require([
       }
     }
 
-    function updateLayersElements(car,buffer,simulation,countiesArray){
+    function updateLayersElements(car, buffer, simulation, countiesArray) {
       //velocityLayer.removeAll();
       //countiesLayer.removeAll();
       console.log("entra updateLayersElements");
@@ -983,8 +832,8 @@ require([
       carLayer.add(car);
       carLayer.add(buffer);
       updateVelocityLine(simulation);
-      
-      for ( i = 0; i< countiesArray.length; i++){
+
+      for (i = 0; i < countiesArray.length; i++) {
         countiesLayer.add(new Graphic({
           geometry: countiesArray[i].countyGeometry,
           //symbol: countiesArray[i].populationGraphic
