@@ -154,7 +154,7 @@ require([
 
     initializeRouteVariables();
     setLayers();
-    //loadRoutes();
+    loadRoutes();
 
     geometryService = new GeometryService({
       url: geometryServiceURL
@@ -390,7 +390,7 @@ require([
         }
       }
 
-      document.getElementById("cargarRutas").onclick = function CargarRutas() {
+      /*document.getElementById("cargarRutas").onclick = function CargarRutas() {
         console.log(selectedRouteGraphic);
         selectedRouteGraphic.symbol = routeStyle;
         routesLayer.removeAll();
@@ -419,25 +419,85 @@ require([
           console.log("error query savedRouteQueryTask: " + err);
         });
 
-      }
+      }*/
       document.getElementById("loadRoute").onclick = function CargarRutas() {
-        //var selectedRoute = document.getElementById("address").value;
-        var selectedRoute = "Miami, Florida => New York";
-        selectedRoute = selectedRoute.replace(/ => /g, "_");
-        var url = queryRoutesURL + selectedRoute + queryRoutesURLEnd
-        $.ajax({
-          type: "POST",
-          url: url,
-          //data: data,
-          success: (response) => {
-            addressResult = response.features;
-          },
-          dataType: "json",
-          async: false
-        });
-        console.log(addressResult);*/
-
+        if (selectedRoute){
+          selectedRoute = routesArray[j].replace(/ => /g, "_");
+          var url = queryRoutesURL + selectedRoute + queryRoutesURLEnd
+          var routeResponse
+          $.ajax({
+            type: "POST",
+            url: url,
+            //data: data,
+            success: (response) => {
+              routeResponse = response;
+              /*var routeSelected = {
+                geometry: routeResult[0].geometry,
+                symbol: routeStyle 
+            }*/
+            /*console.log("routeSelected");
+            console.log(routeSelected);
+            routesLayer.add(routeSelected);
+              console.log(routeResult);*/
+            },
+            dataType: "json",
+            async: false
+          });
+          
+          /*  query.where = `notes = 'SigGroup12_${selectedRoute}'`;
+            query.returnGeometry = true;
+            query.outSpatialReference = { wkid: 102100 };
+          routesFeatureLayer.queryFeatures(query)
+          .then(featureSet =>{
+              var routeResult = {
+                  geometry: featureSet.features[0].geometry,
+                  symbol: routeStyle
+              };
+              console.log("routeResult");
+              console.log(routeResult);
+                routesLayer.removeAll();
+              routesLayer.add(routeResult);
+      
+          })
+          .catch (err => {
+              console.log("Load Route: ", err);
+              showToast(`Error al cargar la ruta ${name}`, "error");
+          })*/
+        //  console.log("routeResponse: "+routeResponse);
+        // routeResponse.symbol = routeStyle;
+        routeResponse.features[0].geometry.type = "polyline";  
+        
+        var polylineAtt = {
+          Name: "Keystone Pipeline",
+          Owner: "TransCanada"
+        }
+        var polyline = {
+          type: "polyline",  // autocasts as new Polyline()
+            paths: routeResponse.features[0].geometry.paths,
+            spatialReference: { wkid: 102100 }
+        };
+        //var selectedRouteGraphic= setGraphic();
+        //var selectedRouteGraphic = new Graphic();
+        selectedRouteGraphic.geometry= polyline;
+        selectedRouteGraphic.attributes = polylineAtt;
+        //selectedRouteGraphic.geometry.type= "polyline";
+        selectedRouteGraphic.symbol = routeStyle; 
+        
+      
+        var routeSelected={
+          geometry: routeResponse.features[0].geometry,
+          symbol: routeStyle
+        };
+      
+        console.log("selectedRouteGraphic");
+        console.log(selectedRouteGraphic);
+        routesLayer.removeAll();
+        routesLayer.add(selectedRouteGraphic);
+      }else{
+        alert("Debe seleccionar una ruta");
       }
+
+    }
 
 
       document.getElementById("exportPDF").onclick = function exportPDF() {
@@ -887,4 +947,5 @@ require([
       }
       addRouteToList(routesArray);
     }
+    
   });

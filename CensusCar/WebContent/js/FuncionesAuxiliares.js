@@ -110,7 +110,7 @@ function insertRouteToList(routeName){
         async: false
       });
   } */
-function upLoadRoute(j){
+  function upLoadRoute(j){
     selectedRoute = routesArray[j].replace(/ => /g, "_");
     var url = queryRoutesURL + selectedRoute + queryRoutesURLEnd
     var routeResponse
