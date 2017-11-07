@@ -112,14 +112,15 @@ function insertRouteToList(routeName){
   } */
 function upLoadRoute(j){
     selectedRoute = routesArray[j].replace(/ => /g, "_");
-    var url = queryRoutesURL + selectedRoute + queryRoutesURLEnd
+    
+    /* var url = queryRoutesURL + selectedRoute + queryRoutesURLEnd
     var routeResponse
     $.ajax({
       type: "POST",
       url: url,
       //data: data,
       success: (response) => {
-        routeResponse = response;
+        routeResponse = response; */
         /*var routeSelected = {
           geometry: routeResult[0].geometry,
           symbol: routeStyle 
@@ -128,10 +129,10 @@ function upLoadRoute(j){
       console.log(routeSelected);
       routesLayer.add(routeSelected);
         console.log(routeResult);*/
-      },
+      /* },
       dataType: "json",
       async: false
-    });
+    }); */
     
     /*  query.where = `notes = 'SigGroup12_${selectedRoute}'`;
       query.returnGeometry = true;
@@ -154,7 +155,7 @@ function upLoadRoute(j){
     })*/
   //  console.log("routeResponse: "+routeResponse);
    // routeResponse.symbol = routeStyle;
-   routeResponse.features[0].geometry.type = "polyline";  
+   /* routeResponse.features[0].geometry.type = "polyline";  
    
   var polylineAtt = {
     Name: "Keystone Pipeline",
@@ -164,10 +165,10 @@ function upLoadRoute(j){
     type: "polyline",  // autocasts as new Polyline()
       paths: routeResponse.features[0].geometry.paths,
       spatialReference: { wkid: 102100 }
-  };
+  }; */
   //var selectedRouteGraphic= setGraphic();
   //var selectedRouteGraphic = new Graphic();
-  selectedRouteGraphic.geometry= polyline;
+  /* selectedRouteGraphic.geometry= polyline;
   selectedRouteGraphic.attributes = polylineAtt;
    //selectedRouteGraphic.geometry.type= "polyline";
    selectedRouteGraphic.symbol = routeStyle; 
@@ -181,6 +182,6 @@ function upLoadRoute(j){
   console.log("selectedRouteGraphic");
   console.log(selectedRouteGraphic);
   routesLayer.removeAll();
-  routesLayer.add(selectedRouteGraphic);
+  routesLayer.add(selectedRouteGraphic); */
 
 }
