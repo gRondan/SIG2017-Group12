@@ -11,7 +11,7 @@ var routeURL = "https://route.arcgis.com/arcgis/rest/services/World/Route/NAServ
 var directionsFeatureLayerURL = "http://sampleserver5.arcgisonline.com/arcgis/rest/services/LocalGovernment/Events/FeatureServer/0"
 var routesFeatureLayerURL = "http://sampleserver5.arcgisonline.com/arcgis/rest/services/LocalGovernment/Recreation/FeatureServer/1"
 var directionURL = 'http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?singleLine='
-var findAddressParameters = '&forStorage=true&maxLocations=1&&token='
+var findAddressParameters = '&forStorage=true&sourceCountry=USA&maxLocations=1&&token='
 var exportPDFURL = "http://sampleserver5.arcgisonline.com/arcgis/rest/services/Utilities/PrintingTools/GPServer/Export%20Web%20Map%20Task"
 var CountiesLayerURL = "http://services.arcgisonline.com/arcgis/rest/services/Demographics/USA_1990-2000_Population_Change/MapServer/3"
 var geometryService
@@ -312,7 +312,7 @@ require([
                 addFeatures: [routeGraphic]
               }).then(() => {
                 console.log("Save routes ok ");
-                //addRouteToList(routeName);
+                addRouteToList(routeName);
                 console.log(routeGraphic);
                 routeQueryTask.execute(routeQuery).then(function (results) {
                   console.log("routeQueryTask execute ok");
