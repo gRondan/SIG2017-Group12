@@ -26,9 +26,13 @@ var directionsArray = []
 var simulating = false;
 var current_route = null;
 var addressResult
+var lastIteration
 var xDirection
 var yDirection
 var trayectoryPopulation
+var options = {
+  duration: 1000  // Duration of animation will be 5 seconds
+};
 //LAYERS
 var pointsLayer
 var routesLayer
@@ -137,7 +141,7 @@ require([
 
     getToken();
     prepareQueries();
-    loadRoutes();
+    
     //Capa Tiled pedida en letra de obligatorio
     tiled = new Tiled(mapURL);
 
@@ -146,9 +150,9 @@ require([
       layers: [tiled]
     });
 
-
     initializeRouteVariables();
     setLayers();
+    //loadRoutes();
 
     geometryService = new GeometryService({
       url: geometryServiceURL
@@ -161,7 +165,6 @@ require([
       spatialReference: { wkid: 102100 },
       map: map
     });
-
 
     function getToken() {
       $.ajax({
@@ -272,6 +275,10 @@ require([
             routeName += "_";
             routeName += points[i].name;
           };
+          if (!routesArray.includes(routeName)){
+            routesArray.push(routeName);
+            
+          }
           console.log(routeName);
           var RouteResoults = RouteTask.solve(RouteParameters)
             .then((data) => {
@@ -336,6 +343,7 @@ require([
         simulating = false;
         $('#ptosList').prop('hidden', false);
         $('#infoList').prop('hidden', true);
+        simulation.iteration = 0;
       }
       document.getElementById("playSimulation").onclick = function startSimulation() {
         velocityLayer.removeAll();
@@ -698,10 +706,9 @@ require([
                 var content = "<b>Condado : Pob en buffer / Pob Total: </b><br/>";
                 var countiesArray = [];
                 result.forEach(countyInfo => {
-                  populationCalculated += countyInfo.populationDetected;
                   trayectoryPopulation += countyInfo.populationDetected;
-                  content += countyInfo.countyName + ": " + Math.round(countyInfo.populationDetected) + " / " + Math.round(countyInfo.totalCountyPopulation) + "<br/>";
                   populationCalculated += countyInfo.populationDetected;
+                  content += countyInfo.countyName + ": " + Math.round(countyInfo.populationDetected) + " / " + Math.round(countyInfo.totalCountyPopulation) + "<br/>";
                   if (countyInfo.populationDetected < 10000) {
                     populationGraphic = countyGraphicLowPopulation;
                   } else if (countyInfo.populationDetected < 30000) {
@@ -771,10 +778,11 @@ require([
     function updateVelocityLine(simulation) {
       var velocity_path = [];
       var start = simulation.iteration - simulation.step >= 0 ? simulation.iteration - simulation.step : 0;
-      velocityLayer.removeAll();
-      for (var i = 0; i <= simulation.iteration; i++) {
+      //velocityLayer.removeAll();
+      for (var i = lastIteration; i <= simulation.iteration; i++) {
         velocity_path.push(simulation.coordinates[i]);
       }
+      lastIteration = simulation.iteration;
 
       var color;
       if ($('#vbaja')[0].checked) {
@@ -813,6 +821,10 @@ require([
     function updateLayersElements(car, buffer, simulation, countiesArray) {
       carLayer.removeAll();
       countiesLayer.removeAll();
+      mapView.goTo({
+        target: car,
+        zoom: 10
+      }, options);
       carLayer.add(car);
       carLayer.add(buffer);
       updateVelocityLine(simulation);

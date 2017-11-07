@@ -69,9 +69,9 @@
     </div>
     <div id="map"></div>
     <div id="menu">
-      <nav class="navbar navbar-inverse bg-primary" style="margin-bottom: unset;">
+      <nav class="navbar navbar-inverse bg-primary" style="margin-bottom: unset; border-radius: 0px;">
         <div class="row" style="margin-right: unset; margin-left: unset;">
-          <div class="col-xs-4">
+          <div class="col-xs-4" style="transform: translateY(20%);">
             <div class="input-group stylish-input-group">
               <input id="address" type="text" class="form-control" placeholder="Search" autofocus>
               <span class="input-group-addon">
@@ -81,33 +81,31 @@
               </span>
             </div>
           </div>
-          <button id="findRoute" class="btn btn-primary" type="button">Crear ruta
+          <button id="findRoute" class="btn btn-primary" style="transform: translateY(20%);" type="button">Create route
             <i class="glyphicon glyphicon-road"></i>
           </button>
-          <button id="cargarRutas" class="btn btn-primary" type="button">Cargar
-            </button>
-          <button id="playSimulation" class="btn btn-success" style="border-radius: 50%;" type="button">
+          <button id="playSimulation" class="btn btn-success" style="border-radius: 50%; transform: translateY(20%);" type="button">
             <i class="glyphicon glyphicon-play"></i>
           </button>
-          <button id="pauseSimulation" class="btn btn-danger" style="border-radius: 50%;" type="button">
+          <button id="pauseSimulation" class="btn btn-danger" style="border-radius: 50%; transform: translateY(20%);" type="button">
             <i class="glyphicon glyphicon-stop"></i>
           </button>
-          <button id="exportPDF" class="btn btn-primary" type="button">Export PDF
+          <button id="exportPDF" class="btn btn-primary" style="transform: translateY(20%);" type="button">Export PDF
             <i class="glyphicon glyphicon-file"></i>
           </button>
-          <div class="col-md-3" style="text-align:center">
+          <div class="col-md-3" style="text-align:center; transform: translateY(10%);">
             <div>
-              <span> Velocidad del móvil: </span>
+              <span> Car velocity: </span>
               <form>
-                <input type="radio" name="rd-velocidad" id="vbaja" value="vbaja" checked> Baja
-                <input type="radio" name="rd-velocidad" id="vmedia" value="vmedia"> Media
-                <input type="radio" name="rd-velocidad" id="valta" value="valta"> Alta
-                <input type="radio" name="rd-velocidad" id="vmuyalta" value="vmuyalta"> Muy Alta
+                <input type="radio" name="rd-velocidad" id="vbaja" value="vbaja" checked> Low
+                <input type="radio" name="rd-velocidad" id="vmedia" value="vmedia"> Medium
+                <input type="radio" name="rd-velocidad" id="valta" value="valta"> high
+                <input type="radio" name="rd-velocidad" id="vmuyalta" value="vmuyalta"> Very high
               </form>
             </div>
           </div>
-          <div class="col-xs-1">
-            <input id="buffSize" type="number" class="form-control" placeholder="Km's buff">
+          <div class="col-xs-1" style="transform: translateY(20%);">
+            <input id="buffSize" type="number" class="form-control" placeholder="Km buff">
           </div>
         </div>
       </nav>

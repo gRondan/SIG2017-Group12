@@ -88,6 +88,12 @@ function addRouteToList(){
     }
   }
 
+function insertRouteToList(routeName){
+    if (routeName.localeCompare("SigGroup12") !=0){
+        $("<div class=" + "list-items" + " onclick="+"upLoadRoute("+routesArray.length()-1+")" + " id=" + "elem_" + routesArray.length()-1 + ">"+ routeName + "</div>").appendTo( "#list-Routes" );
+      }
+}
+
   function upLoadRoute(j){
       selectedRoute = routesArray[j].replace(/ => /g, "_");
       var url = queryRoutesURL + selectedRoute + queryRoutesURLEnd
