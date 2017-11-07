@@ -28,6 +28,7 @@ var addressResult
 var xDirection
 var yDirection
 var trayectoryPopulation
+var routesArrayGeometries
 //LAYERS
 var pointsLayer
 var routesLayer
@@ -277,19 +278,21 @@ require([
               var routeResult = data.routeResults[0].route;
               routeResult.symbol = routeStyle;
               routesLayer.removeAll();
-              routesLayer.add(routeResult);
+              routesLayer.add(routeResult); 
               var car = createCarGraphyc(points[0].graphic.geometry.x, points[0].graphic.geometry.y);
               carLayer.add(car);
               current_route = routeResult;
               console.log(current_route);
-
+              routeResult.attributes.notes = routeName;
               var routeGraphic = new Graphic();
               routeGraphic.geometry = current_route.geometry;
+              //routeGraphic.symbol = routeStyle;
               routeGraphic.attributes = {
                 //name: `SigGroup12_${points[0].name}_${points[points.length - 1].name}`,
                 trailtype: 4,
                 notes: routeName
               };
+              //routesLayer.add
               routesFeatureLayer.applyEdits({
                 addFeatures: [routeGraphic]
               }).then(() => {
@@ -839,12 +842,14 @@ require([
         dataType: "json",
         async: false
       });
-      //console.log("allRoutesResult: " + allRoutesResult);
+      console.log("allRoutesResult: " + allRoutesResult);
       $('#list-Routes').empty();
       $("<b> Estado: </b>").appendTo("#list-Routes");
       var routesArray = [];
+      routesArrayGeometries = [];
       for (i = 0; i < allRoutesResult.length; i++) {
         var name = allRoutesResult[i].attributes.notes;
+        var geometry = allRoutesResult[i].geometry;
         var repetido = false;
         for (j = 0; j < routesArray.length; j++){
           if (name.localeCompare(routesArray[j]) == 0){
@@ -854,7 +859,7 @@ require([
         } 
         if(!repetido){
           routesArray.push(name);
-          
+          routesArrayGeometries.push({name,geometry});
         }
       }
       addRouteToList(routesArray);
