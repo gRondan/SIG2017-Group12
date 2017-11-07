@@ -16,11 +16,12 @@ var exportPDFURL = "http://sampleserver5.arcgisonline.com/arcgis/rest/services/U
 var CountiesLayerURL = "http://services.arcgisonline.com/arcgis/rest/services/Demographics/USA_1990-2000_Population_Change/MapServer/3"
 var geometryService
 var geometryServiceURL = "https://sampleserver6.arcgisonline.com/arcgis/rest/services/Utilities/Geometry/GeometryServer"
-var queryRoutesURL = "https://sampleserver5.arcgisonline.com/arcgis/rest/services/LocalGovernment/Recreation/FeatureServer/1/query?f=json&where=notes%20%3D%20%27SigGroup12_"
+var queryRoutesURL = "https://sampleserver5.arcgisonline.com/arcgis/rest/services/LocalGovernment/Recreation/FeatureServer/1/query?f=json&where=notes%20%3D%20%27"
 var queryAllRoutesURL = "https://sampleserver5.arcgisonline.com/arcgis/rest/services/LocalGovernment/Recreation/FeatureServer/1/query?f=json&where=notes%20LIKE%20%27SigGroup12%25%27&returnGeometry=true&spatialRel=esriSpatialRelIntersects&outSR=102100"
 var queryRoutesURLEnd = "%27&returnGeometry=true&spatialRel=esriSpatialRelIntersects&outSR=102100"
 var queryRoutesURLHardcode = "Miami%2C%20Florida_Miami%20Beach%2C%20Florida"
 var points = []
+var routesArray = [];
 var directionsArray = []
 var simulating = false;
 var current_route = null;
@@ -511,6 +512,7 @@ require([
     function stopSimulation() {
       if (simulating) {
         carLayer.removeAll();
+        countiesLayer.removeAll();
         simulating = false;
       }
     }
@@ -769,7 +771,8 @@ require([
     function updateVelocityLine(simulation) {
       var velocity_path = [];
       var start = simulation.iteration - simulation.step >= 0 ? simulation.iteration - simulation.step : 0;
-      for (var i = start; i <= simulation.iteration; i++) {
+      velocityLayer.removeAll();
+      for (var i = 0; i <= simulation.iteration; i++) {
         velocity_path.push(simulation.coordinates[i]);
       }
 
@@ -842,7 +845,7 @@ require([
       //console.log("allRoutesResult: " + allRoutesResult);
       $('#list-Routes').empty();
       $("<b> Estado: </b>").appendTo("#list-Routes");
-      var routesArray = [];
+      
       for (i = 0; i < allRoutesResult.length; i++) {
         var name = allRoutesResult[i].attributes.notes;
         var repetido = false;

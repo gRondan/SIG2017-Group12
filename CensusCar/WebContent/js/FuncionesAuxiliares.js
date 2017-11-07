@@ -76,14 +76,31 @@ function eliminarPto(id){
     $('#infoList').prop('hidden',true);
 });
 
-function addRouteToList(allRoutes){
+function addRouteToList(){
     $('#list-Routes').empty();
     var j = 0;
-    while (j < allRoutes.length){
-      var name = allRoutes[j].replace("SigGroup12_", "").replace(/_/g, " => ");
+    while (j < routesArray.length){
+      var name = routesArray[j].replace("SigGroup12_", "").replace(/_/g, " => ");
       if (name.localeCompare("SigGroup12") !=0){
-        $("<div class=" + "list-items"+" id=" + "elem_" + j + ">"+ name + "</div>").appendTo( "#list-Routes" );
+        $("<div class=" + "list-items" + " onclick="+"upLoadRoute("+j+")" + " id=" + "elem_" + j + ">"+ name + "</div>").appendTo( "#list-Routes" );
       }
       j++;
     }
+  }
+
+  function upLoadRoute(j){
+      selectedRoute = routesArray[j].replace(/ => /g, "_");
+      var url = queryRoutesURL + selectedRoute + queryRoutesURLEnd
+      $.ajax({
+        type: "POST",
+        url: url,
+        //data: data,
+        success: (response) => {
+          addressResult = response.features;
+          routesLayer.add(addressResult);
+          console.log(addressResult);
+        },
+        dataType: "json",
+        async: false
+      });
   }
