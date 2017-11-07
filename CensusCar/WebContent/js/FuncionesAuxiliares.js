@@ -80,7 +80,10 @@ function addRouteToList(allRoutes){
     $('#list-Routes').empty();
     var j = 0;
     while (j < allRoutes.length){
-      $("<div class=" + "list-items"+" id=" + "elem_" + j + ">"+ j + " " + allRoutes[j].attributes.notes.replace("SigGroup12_", "").replace(/_/g, " => ") + "</div>").appendTo( "#list-Routes" );
+      var name = allRoutes[j].replace("SigGroup12_", "").replace(/_/g, " => ");
+      if (name.localeCompare("SigGroup12") !=0){
+        $("<div class=" + "list-items"+" id=" + "elem_" + j + ">"+ name + "</div>").appendTo( "#list-Routes" );
+      }
       j++;
     }
   }

@@ -854,8 +854,9 @@ require([
         } 
         if(!repetido){
           routesArray.push(name);
-          addRouteToList(allRoutesResult);
+          
         }
       }
+      addRouteToList(routesArray);
     }
   });
