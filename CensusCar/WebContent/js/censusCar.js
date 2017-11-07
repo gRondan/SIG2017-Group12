@@ -291,12 +291,12 @@ require([
                 geometry: data.routeResults[0].route,
                 symbol: routeStyle
             };*/
-              c
               routesLayer.add(routeResult); 
               var car = createCarGraphyc(points[0].graphic.geometry.x, points[0].graphic.geometry.y);
               carLayer.add(car);
               console.log("routeResult");
               console.log(routeResult);
+              current_route = routeResult;
               routeResult.attributes.notes = routeName;
               var routeGraphic = new Graphic({
               geometry: routeResult.geometry,
@@ -423,6 +423,11 @@ require([
       }*/
       document.getElementById("loadRoute").onclick = function CargarRutas() {
         if (selectedRoute){
+          carLayer.removeAll();
+          velocityLayer.removeAll();
+          pointsLayer.removeAll()
+          countiesLayer.removeAll();
+          points = [];
           var selectedRouteGraphic = new Graphic();
           selectedRoute = selectedRoute.replace(/ => /g, "_");
           var url = queryRoutesURL + selectedRoute + queryRoutesURLEnd
@@ -492,6 +497,7 @@ require([
         };
       
         console.log("selectedRouteGraphic");
+        current_route = selectedRouteGraphic;
         console.log(selectedRouteGraphic);
         routesLayer.removeAll();
         routesLayer.add(selectedRouteGraphic);
@@ -562,6 +568,11 @@ require([
         id: "velocityLayer"
       });
       map.layers.add(velocityLayer);
+      carLayer = new GraphicsLayer({
+        title: "Car",
+        id: "carLayer"
+      });
+      map.layers.add(carLayer);
     }
 
     function setFeatureLayers() {
@@ -582,11 +593,11 @@ require([
 
     function saveDirection() {
 
-      carLayer = new GraphicsLayer({
+      /*carLayer = new GraphicsLayer({
         title: "Car",
         id: "carLayer"
       });
-      map.layers.add(carLayer);
+      map.layers.add(carLayer);*/
 
     }
 
