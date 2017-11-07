@@ -54,7 +54,7 @@ var countiesQueryTask
 var countiesQuery
 var simulation
 //Estilo de la ruta
-var selectedRouteGraphic
+//var selectedRouteGraphic
 
 var routeStyle = {
   type: "simple-line",
@@ -108,6 +108,7 @@ var countyGraphicHighPopulation = {
   width: 3
 };
 var query 
+var selectedRoute = null;
 
 require([
   "esri/Map",
@@ -140,7 +141,7 @@ require([
     Query, PrintTask, PrintParameters, PrintTemplate, BufferParameters, Point, AreasAndLengthsParameters,
     Polyline) {
       query = new Query();
-      selectedRouteGraphic = new Graphic();
+      
     getToken();
     prepareQueries();
     
@@ -422,7 +423,8 @@ require([
       }*/
       document.getElementById("loadRoute").onclick = function CargarRutas() {
         if (selectedRoute){
-          selectedRoute = routesArray[j].replace(/ => /g, "_");
+          var selectedRouteGraphic = new Graphic();
+          selectedRoute = selectedRoute.replace(/ => /g, "_");
           var url = queryRoutesURL + selectedRoute + queryRoutesURLEnd
           var routeResponse
           $.ajax({
@@ -496,6 +498,7 @@ require([
       }else{
         alert("Debe seleccionar una ruta");
       }
+      selectedRoute = null;
 
     }
 
