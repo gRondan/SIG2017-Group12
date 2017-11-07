@@ -33,6 +33,7 @@ var trayectoryPopulation
 var options = {
   duration: 1000  // Duration of animation will be 5 seconds
 };
+var routesArrayGeometries
 //LAYERS
 var pointsLayer
 var routesLayer
@@ -53,7 +54,7 @@ var countiesQueryTask
 var countiesQuery
 var simulation
 //Estilo de la ruta
-
+var selectedRouteGraphic
 
 var routeStyle = {
   type: "simple-line",
@@ -106,7 +107,7 @@ var countyGraphicHighPopulation = {
   color: "red",
   width: 3
 };
-
+var query 
 
 require([
   "esri/Map",
@@ -138,7 +139,8 @@ require([
     RouteParameters, GeometryService, DensifyParameters, geometryEngine, FeatureSet, FeatureLayer, QueryTask,
     Query, PrintTask, PrintParameters, PrintTemplate, BufferParameters, Point, AreasAndLengthsParameters,
     Polyline) {
-
+      query = new Query();
+      selectedRouteGraphic = new Graphic();
     getToken();
     prepareQueries();
     
@@ -284,25 +286,32 @@ require([
             .then((data) => {
               var routeResult = data.routeResults[0].route;
               routeResult.symbol = routeStyle;
-              routesLayer.removeAll();
-              routesLayer.add(routeResult);
+              /*var routeResult = { 
+                geometry: data.routeResults[0].route,
+                symbol: routeStyle
+            };*/
+              c
+              routesLayer.add(routeResult); 
               var car = createCarGraphyc(points[0].graphic.geometry.x, points[0].graphic.geometry.y);
               carLayer.add(car);
-              current_route = routeResult;
-              console.log(current_route);
-
-              var routeGraphic = new Graphic();
-              routeGraphic.geometry = current_route.geometry;
-              routeGraphic.attributes = {
+              console.log("routeResult");
+              console.log(routeResult);
+              routeResult.attributes.notes = routeName;
+              var routeGraphic = new Graphic({
+              geometry: routeResult.geometry,
+              symbol: routeStyle,
+              attributes : {
                 //name: `SigGroup12_${points[0].name}_${points[points.length - 1].name}`,
                 trailtype: 4,
                 notes: routeName
-              };
+              }
+            });
+              //routesLayer.add
               routesFeatureLayer.applyEdits({
                 addFeatures: [routeGraphic]
               }).then(() => {
                 console.log("Save routes ok ");
-                addRouteToList(routeName);
+                //addRouteToList(routeName);
                 console.log(routeGraphic);
                 routeQueryTask.execute(routeQuery).then(function (results) {
                   console.log("routeQueryTask execute ok");
@@ -381,9 +390,12 @@ require([
         }
       }
 
-      /*document.getElementById("cargarRutas").onclick = function CargarRutas() {
-
-        $.ajax({
+      document.getElementById("cargarRutas").onclick = function CargarRutas() {
+        console.log(selectedRouteGraphic);
+        selectedRouteGraphic.symbol = routeStyle;
+        routesLayer.removeAll();
+        routesLayer.add(selectedRouteGraphic);
+        /*$.ajax({
           type: "POST",
           url: queryAllRoutesURL,
           //data: data,
@@ -407,7 +419,7 @@ require([
           console.log("error query savedRouteQueryTask: " + err);
         });
 
-      }*/
+      }
       document.getElementById("loadRoute").onclick = function CargarRutas() {
         //var selectedRoute = document.getElementById("address").value;
         var selectedRoute = "Miami, Florida => New York";
@@ -423,7 +435,7 @@ require([
           dataType: "json",
           async: false
         });
-        console.log(addressResult);
+        console.log(addressResult);*/
 
       }
 
@@ -854,12 +866,13 @@ require([
         dataType: "json",
         async: false
       });
-      //console.log("allRoutesResult: " + allRoutesResult);
-      $('#list-Routes').empty();
-      $("<b> Estado: </b>").appendTo("#list-Routes");
-      
+      console.log("allRoutesResult: ");
+      console.log(allRoutesResult);
+      routesArray = [];
+      routesArrayGeometries = [];
       for (i = 0; i < allRoutesResult.length; i++) {
         var name = allRoutesResult[i].attributes.notes;
+        var geometry = allRoutesResult[i].geometry;
         var repetido = false;
         for (j = 0; j < routesArray.length; j++){
           if (name.localeCompare(routesArray[j]) == 0){
@@ -869,7 +882,7 @@ require([
         } 
         if(!repetido){
           routesArray.push(name);
-          
+          routesArrayGeometries.push({name,geometry});
         }
       }
       addRouteToList(routesArray);
