@@ -80,7 +80,7 @@ var carGraphic = {
 //Estilo del buffer del vehiculo
 var visibilitySymbol = {
   type: "simple-fill",
-  color: [140, 140, 222, 0.5],
+  color: [42, 46, 75, 0.5],
   outline: {
     color: [0, 0, 0, 0.5],
     width: 2
@@ -89,7 +89,7 @@ var visibilitySymbol = {
 //Estilo del poligono de los condados
 var countyGraphic = {
   type: "simple-fill",
-  color: [247, 153, 71, 0.3],
+  color: [161, 35, 18, 0.3],
   width: 3
 };
 var countyGraphicLowPopulation = {
